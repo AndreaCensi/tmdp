@@ -66,8 +66,8 @@ def jobs_vit_solve(context, id_mdp):
     context.add_report(context.comp(report_vit, mdp, vit_res), 'vit')
     context.add_report(context.comp(report_policy, mdp, vit_res), 'policy')
 
-    betas = [0.05, 0.5, 5, 50]
-    its = [50 + 25, 50, 50, 35]
+    betas = [0.001, 0.05, 0.051, 0.052, 0.15, 0.5, 5]
+    its = [10, 75, 75, 100, 75, 75, 50]
     for i, (c, beta) in enumerate(iterate_context_names(context, betas)):
         c.add_extra_report_keys(beta=beta)
         iterations = its[i]

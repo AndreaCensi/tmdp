@@ -72,7 +72,7 @@ class GridWorld(SimpleMDP):
             return 0.0
         else:
             if state == state2:  # bumped into wall
-                return -1
+                return -2
 
             (di, dj) = GridWorld.action_to_displ[action]
             length = np.hypot(di, dj)
