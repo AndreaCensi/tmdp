@@ -1,0 +1,5 @@
+- id: tmaze
+  desc: Maze used in Tishby's paper
+  code: 
+  - gridworld.TishbyMaze
+  - {}
