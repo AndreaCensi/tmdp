@@ -16,12 +16,13 @@ class TMDP(QuickMultiCmdApp):
 
     def get_config_dirs(self):
         from pkg_resources import resource_filename  # @UnresolvedImport
-        config_dir = resource_filename("tmdp", "configs")
-        return [config_dir]
+        return [
+            resource_filename("tmdp", "configs"),
+            resource_filename("gridworld", "configs"),
+        ]
 
     def initial_setup(self):
         config_dirs = self.get_config_dirs()
         GlobalConfig.global_load_dirs(config_dirs)
-
 
         np.seterr(all='raise')

@@ -1,9 +1,10 @@
 from collections import defaultdict
-import warnings
-
 import numpy as np
-from tmdp.solving.value_iteration_meat import value_diff, get_mdp_policy
-from tmdp.mdp import all_actions, _uniform_dist
+import warnings
+from tmdp.mdp_utils.prob_utils import _uniform_dist
+from tmdp.mdp_utils.mdps_utils import all_actions
+from tmdp.meat.value_it.meat import value_diff
+
 
 
 def free_energy_iteration(mdp, beta, min_iterations=100, max_iterations=100, threshold=1e-8):
@@ -130,7 +131,7 @@ def compute_Z(mdp, pi_hat, F):
                 print('trying to compute exp(%s)' % (-F[s][a]))
                 raise
     return Z
-    
+
 
 def compute_pi_hat(pi, p_hat):
     pi_hat = defaultdict(lambda: 0.0)

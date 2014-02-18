@@ -69,17 +69,3 @@ class SimpleMDP():
         """
         pass
 
-
-def all_actions(mdp):
-    actions = set()
-    for s in mdp.states():
-        actions.update(mdp.actions(s))
-    return sorted(list(actions))
-
-def _uniform_dist(what):
-    what = list(what)
-    n = len(what)
-    p = {}
-    for s in what:
-        p[s] = 1.0 / n
-    return p

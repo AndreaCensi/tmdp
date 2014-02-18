@@ -37,7 +37,7 @@ setup(name='tmdp',
       entry_points={
         'console_scripts': [
             'gridworld_test_display = gridworld:gridworld_test_display',
-            'tmdp = tmdp.solving:tmpd_main'
+            'tmdp = tmdp.programs:tmpd_main'
        ]
       },
 )

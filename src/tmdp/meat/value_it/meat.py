@@ -1,5 +1,5 @@
 import numpy as np
-from tmdp.mdp import _uniform_dist
+from tmdp.mdp_utils.prob_utils import _uniform_dist
 
 
 def get_mdp_policy(mdp, gamma):
