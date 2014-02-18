@@ -1,9 +1,12 @@
+from collections import defaultdict
+
 from contracts import contract
 
 import numpy as np
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from reprep import Report
 from tmdp import get_conftools_tmdp_smdps
+from tmdp.slice_sampling import slice_sampler
 from tmdp.solving.free_energy import free_energy_iteration
 from tmdp.solving.main import TMDP
 from tmdp.solving.value_iteration_meat import vit_solve, policy_from_value
@@ -79,31 +82,11 @@ def report_free_energy(mdp, fe_res):
     iterations = fe_res['iterations']
     last = iterations[-1]
 
-
-    def normalize(p):
-        p_sum = sum(p.values())
-        r = {}
-        for x in p:
-            r[x] = p[x] / p_sum
-        return r
-
-    def normalize_conditional(pi):
-        pi2 = {}
-        for s, pi_s in pi.items():
-            pi2[s] = normalize(pi_s)
-        return pi2
-
     r = Report()
     r.text('params', str(fe_res['params']))
-#
-#     for it in iterations:
-#         f = r.figure()
-#         with f.plot('z') as pylab:
-#             mdp.display_state_values(pylab, it['Z'])
-#
-#         with f.plot('policy') as pylab:
-#             mdp.display_policy(pylab, it['pi'])
-#
+
+    policy = last['pi']
+    report_maze_policy(r, mdp, policy)
 
     f = r.figure()
     with f.plot('z') as pylab:
@@ -113,26 +96,76 @@ def report_free_energy(mdp, fe_res):
         print('normlized: %s' % Zs)
 
         mdp.display_state_values(pylab, Z)
-
-    with f.plot('policy') as pylab:
-#         policy = normalize_conditional(last['pi'])
-        policy = last['pi']
-        mdp.display_policy(pylab, policy)
     return r
 
+def report_maze_policy(r, mdp, policy):
+    f = r.figure()
+    with f.plot('policy') as pylab:
+
+        mdp.display_policy(pylab, policy)
+
+    state_dist = run_trajectories(mdp, start=(2, 2), policy=policy,
+                                  nsteps=1000, ntraj=100,
+                                  stop_at=(11, 11))
+    with f.plot('state_dist') as pylab:
+        mdp.display_state_dist(pylab, state_dist)
+
+
+
+
+def run_trajectories(mdp, start, policy, nsteps, ntraj, stop_at):
+    """ Returns prob. dist over states. """
+    ds = defaultdict(lambda:0)
+    for _ in range(ntraj):
+        states = run_trajectory(mdp, start, policy, nsteps, stop_at)
+        if states[-1] != stop_at:
+            continue
+        for s in states:
+            ds[s] += (1.0 / ntraj) * (1.0 / len(states))
+    return dict(ds)
+
+def run_trajectory(mdp, start, policy, nsteps, stop_at):
+    state = start
+    traj = []
+    for _ in range(nsteps):
+        traj.append(state)
+        if state == stop_at:
+            break
+        action = sample_from_dist(policy[state])
+        state2_dist = mdp.transition(state, action)
+        state = sample_from_dist(state2_dist)
+    return traj
+
+def sample_from_dist(p):
+    values = []
+    probs = []
+    for value, prob in p.items():
+        values.append(value)
+        probs.append(prob)
+
+
+#     assert sum(probs) == 1
+
+    res = slice_sampler(probs, N=1)
+    r = values[res]
+    assert r in p
+    return r
 
 
 
 def report_policy(mdp, vit_res):
     policy = policy_from_value(mdp, vit_res)
+
     r = Report()
-    f = r.figure()
-    with f.plot('policy') as pylab:
-        mdp.display_policy(pylab, policy)
+    report_maze_policy(r, mdp, policy)
+#     f = r.figure()
+#     with f.plot('policy') as pylab:
+#         mdp.display_policy(pylab, policy)
     return r
 
 def report_vit(mdp, vit_res):
     r = Report()
+
     f = r.figure()
     with f.plot('value') as pylab:
         mdp.display_state_values(pylab, vit_res)

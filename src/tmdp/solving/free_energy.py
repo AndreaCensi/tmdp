@@ -1,8 +1,9 @@
 from collections import defaultdict
+import warnings
 
 import numpy as np
 from tmdp.solving.value_iteration_meat import value_diff, get_mdp_policy
-import warnings
+from tmdp.mdp import all_actions, _uniform_dist
 
 
 def free_energy_iteration(mdp, beta, min_iterations=100, max_iterations=100, threshold=1e-8):
@@ -11,7 +12,7 @@ def free_energy_iteration(mdp, beta, min_iterations=100, max_iterations=100, thr
     # average policy
     pi_hat = uniform_actions_dist(mdp)
     # optimal policy, starts as uniform on actions
-    pi = dict([(s, uniform_actions_dist(mdp)) for s in mdp.states()])
+    pi = dict([(s, _uniform_dist(mdp.actions(s))) for s in mdp.states()])
     # no, use mdp policy
 #     pi = get_mdp_policy(mdp, gamma=1)
     # free energy, represented as state -> action -> value,
@@ -19,7 +20,7 @@ def free_energy_iteration(mdp, beta, min_iterations=100, max_iterations=100, thr
     F = {}
     for s in mdp.states():
         F[s] = {}
-        for a in mdp.actions():
+        for a in mdp.actions(s):
             F[s][a] = 1.0
 
     warnings.warn('we do not need this')
@@ -81,7 +82,7 @@ def compute_pi(mdp, pi_hat, Z, F):
     for s in mdp.states():
         pi[s] = {}
 
-        for a in mdp.actions():
+        for a in mdp.actions(s):
             try:
                 if F[s][a] < 500:
                     pi[s][a] = pi_hat[a] * np.exp(-F[s][a]) / Z[s]
@@ -116,7 +117,10 @@ def compute_Z(mdp, pi_hat, F):
     Z = {}
     for s in mdp.states():
         Z[s] = 0
+        s_actions = mdp.actions(s)
         for a, p_a in pi_hat.items():
+            if not a in s_actions:
+                continue
             try:
                 if F[s][a] < 500:
                     Z[s] += p_a * np.exp(-F[s][a])
@@ -141,21 +145,22 @@ def iterate_F(F, mdp, p_hat, pi, pi_hat, beta):
     F2 = {}
     for s in mdp.states():
         F2[s] = {}
-        for a in mdp.actions():
+        for a in mdp.actions(s):
             F2[s][a] = iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a)
     return F2
 
 def iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a):
+    assert a in mdp.actions(s)
     # average over dynamics
     p = mdp.transition(s, a)
-    res = 0
+    res = 0.0
     for s2, p_s2 in p.items():
         R = mdp.reward(s, a, s2)
-        G_ = G(pi, pi_hat, F, s2)
+        G_ = G(mdp, pi, pi_hat, F, s2)
         if p_s2 == 0:
             # print s, a
             # print p
-            frac = 0
+            frac = 0.0
         else:
             frac = np.log(p_s2) - np.log(p_hat[s2])
 
@@ -163,10 +168,11 @@ def iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a):
     return res
 
 
-def G(pi, pi_hat, F, s2):
+def G(mdp, pi, pi_hat, F, s2):
     # average over actions
     f = 0
     for a2, p_a2 in pi[s2].items():
+        assert a2 in mdp.actions(s2)
         if p_a2 == 0:
             frac = 0
         else:
@@ -180,13 +186,6 @@ def G(pi, pi_hat, F, s2):
         f += p_a2 * (frac + F[s2][a2])
     return f
 
-def _uniform_dist(what):
-    what = list(what)
-    n = len(what)
-    p = {}
-    for s in what:
-        p[s] = 1.0 / n
-    return p
 
 def uniform_state_dist(mdp):
     """ Returns uniform p.d. over states. """
@@ -194,4 +193,4 @@ def uniform_state_dist(mdp):
 
 def uniform_actions_dist(mdp):
     """ Returns uniform p.d. over states. """
-    return _uniform_dist(mdp.actions())
+    return _uniform_dist(all_actions(mdp))

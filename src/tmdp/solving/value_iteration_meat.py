@@ -1,26 +1,44 @@
 import numpy as np
+from tmdp.mdp import _uniform_dist
+
 
 def get_mdp_policy(mdp, gamma):
     """ Returns  policy """
     values = vit_solve(mdp, gamma=gamma, threshold=1e-7)
-    policy = policy_from_value(mdp, values, gamma=gamma)
+    policy = policy_from_value(mdp, values)
     return policy
 
-def policy_from_value(mdp, values, gamma=1.0):
+
+def policy_from_value(mdp, values):
     """ values: state -> value """
     P = {}
     for s in mdp.states():
-        P[s] = { best_action(mdp, values, s): 1.0 }
+        actions = best_actions(mdp, values, s)
+        P[s] = _uniform_dist(actions)
+        #  P[s] = { best_action(mdp, values, s): 1.0 }
     return P
 
-def best_action(mdp, V, s, gamma=1):
-    actions = list(mdp.actions())
+#
+# def best_action(mdp, V, s, gamma=1):
+#     actions = mdp.actions(s)
+#     vs = [Q(mdp, V, s, a, gamma=gamma)
+#           for a in actions]
+#     best = np.argmax(vs)
+#     return actions[best]
+
+
+def best_actions(mdp, V, s, gamma=1, threshold=1e-5):
+    actions = mdp.actions(s)
     vs = [Q(mdp, V, s, a, gamma=gamma)
           for a in actions]
-    best = np.argmax(vs)
-    return actions[best]
+    vs = np.array(vs)
+    vs_max = vs.max()
+    best, = np.nonzero(np.abs(vs - vs_max) < threshold)
+    return [actions[i] for i in best]
+
 
 def Q(mdp, V, s, a, gamma=1):
+    assert a in mdp.actions(s)
     f_a = 0
     p_s_a = mdp.transition(s, a)
     for s2, p_s2 in p_s_a.items():
@@ -37,7 +55,7 @@ def vit_solve(mdp, gamma=1, threshold=1e-7):
         V2 = {}
         for s in mdp.states():
             vs = [Q(mdp, V, s, a, gamma=gamma)
-                  for a in mdp.actions()]
+                  for a in mdp.actions(s)]
             V2[s] = max(vs)
         change = value_diff(V, V2)
         # print('Change: %s' % change)

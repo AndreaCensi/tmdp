@@ -1,5 +1,5 @@
-from tmpd.testing import checks_mdp
 from gridworld.grid import EmptyGrid5
+from tmpd.testing import checks_mdp
 
 
 def test_grid_empty1():

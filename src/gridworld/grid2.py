@@ -8,10 +8,14 @@ from tmdp import SimpleMDP
 from contextlib import contextmanager
 
 
-__all__ = ['GridWorld']
+__all__ = ['GridWorld2']
 
 
-class GridWorld(SimpleMDP):
+class GridWorld2(SimpleMDP):
+    """ 
+        This is a version of the grid world where collisions are not allowed
+        as actions. 
+    """
     Empty = 0
     Obstacle = 1
     action_to_displ = {
@@ -33,8 +37,8 @@ class GridWorld(SimpleMDP):
 
     def states(self):
         H, W = self._map.shape
-        for (i,j) in product(range(H), range(W)):
-            if self.is_empty((i,j)):
+        for (i, j) in product(range(H), range(W)):
+            if self.is_empty((i, j)):
                 yield (i, j)
 
     @contract(state='tuple(int,int)')
@@ -42,48 +46,58 @@ class GridWorld(SimpleMDP):
         pass
 
     def is_empty(self, cell):
-        return self._map[cell] == GridWorld.Empty
+        return self._map[cell] == GridWorld2.Empty
 
     def actions(self, state):
-        return list(self.action_to_displ.keys())
+        actions = []
+        for action in self.action_to_displ:
+            s2 = self._next_cell(state, action)
+            if self.is_empty(s2):
+                actions.append(action)
+        return actions
 
     def _next_cell(self, state, action):
         i, j = state
-        (di, dj) = GridWorld.action_to_displ[action]
+        (di, dj) = GridWorld2.action_to_displ[action]
         s2 = (i + di, j + dj)
         return s2
 
     def transition(self, state, action):
+        assert action in self.actions(state)
         # Goal is absorbing state
         if state == self._goal:
             return {self._goal: 1.0}
 
         s2 = self._next_cell(state, action)
-        p = {}
-        if self.is_empty(s2):
+        assert  self.is_empty(s2)
+
+        return {s2: 1.0}
+
+        if False:
+            p = {}
             p[state] = self._fail
             p[s2] = 1 - self._fail
-        else:
-            p[state] = 1
-        return p
+            return p
 
     def reward(self, state, action, state2):  # @UnusedVariable
+        assert action in self.actions(state)
+
         if state == self._goal:
             return 0.0
         else:
             if state == state2:  # bumped into wall
-                return -2
+                assert False, ('%s -> %s -> %s' % (state, action, state2))
 
-            (di, dj) = GridWorld.action_to_displ[action]
+            (di, dj) = GridWorld2.action_to_displ[action]
             length = np.hypot(di, dj)
             return -length
-#             return -1
+            # return -1
 
     @contextmanager
     def _display_map(self, pylab):
         H, W = self._map.shape
         a = pylab.gca()
-        
+
         a.add_patch(Rectangle((0, 0), H, W, edgecolor='black'))
 
         for (i, j) in product(range(H), range(W)):
@@ -99,7 +113,7 @@ class GridWorld(SimpleMDP):
 
         pylab.axis((-1, H + 1, -1, W + 1))
         pylab.axis('equal')
-        
+
     def _display_cell(self, pylab, state, **attrs):
         a = pylab.gca()
         i, j = state
@@ -140,19 +154,20 @@ class GridWorld(SimpleMDP):
         values = np.array(state_values.values())
         m = values.min()
         M = values.max()
-        norm = lambda x: (x-m) / (M-m)
+        norm = lambda x: (x - m) / (M - m)
 
         with self._display_map(pylab):
-
             for s, v in state_values.items():
                 fc = [norm(v), norm(v), norm(v)]
                 self._display_cell(pylab, s, fc=fc)
 
     def display_state_dist(self, pylab, state_dist):
         with self._display_map(pylab):
+            max_p = max(state_dist.values())
             for (i, j), p  in state_dist.items():
-                c1 = np.array([1, 1, 1])
-                c2 = np.array([0, 1, 0])
+                c1 = np.array([0.8, 0.8, 0.8])
+                c2 = np.array([0.0, 1.0, 0.0])
+                p = p / max_p
                 color = c1 * (1 - p) + c2 * p
                 self._display_cell(pylab, (i, j), fc=color, ec='red')
 

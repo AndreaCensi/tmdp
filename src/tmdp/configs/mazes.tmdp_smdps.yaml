@@ -3,3 +3,15 @@
   code: 
   - gridworld.TishbyMaze
   - {}
+
+- id: tmaze2
+  desc: "Maze used in Tishby's paper, but no bumping is allowed."
+  code: 
+  - gridworld.TishbyMaze2
+  - {}
+
+- id: tmaze2f
+  desc: "Failure in actions (0.3)"
+  code: 
+  - gridworld.TishbyMaze2
+  - fail: 0.3

@@ -2,3 +2,4 @@
 out-gridworld_test_display
 out-vit-solve
 src/tmdp.egg-info/
+out-*
