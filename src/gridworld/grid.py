@@ -21,7 +21,7 @@ class GridWorld(SimpleMDP):
         self._fail = fail
 
     def get_goal(self):
-        return self._goal
+        return [self._goal]
 
     def get_map(self):
         return self._map

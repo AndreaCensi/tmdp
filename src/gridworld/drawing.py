@@ -4,19 +4,23 @@ from itertools import product
 from matplotlib.patches import Rectangle
 
 import numpy as np
+from gridworld.grid_world import GridGeometry
 
 
 @contextmanager
 def _display_map(grid, pylab):
     goal = grid.get_goal()
+
     gridmap = grid.get_map()
     H, W = gridmap.shape
     a = pylab.gca()
 
     a.add_patch(Rectangle((0, 0), H, W, edgecolor='black'))
 
+    gg = GridGeometry(gridmap)
+
     for (i, j) in product(range(H), range(W)):
-        if grid.is_empty((i, j)):
+        if gg.is_empty((i, j)):
             attrs = dict(fc='white', ec='black')
         else:
             attrs = dict(fc='black', ec='white')
@@ -24,7 +28,8 @@ def _display_map(grid, pylab):
 
     yield pylab
 
-    a.add_patch(Rectangle(goal, 1, 1, ec='blue', fc='none'))
+    for g in goal:
+        a.add_patch(Rectangle(g, 1, 1, ec='blue', fc='none'))
 
     pylab.axis((-1, H + 1, -1, W + 1))
     pylab.axis('equal')

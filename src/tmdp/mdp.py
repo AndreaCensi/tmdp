@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from contracts import ContractsMeta, new_contract
 from numpy.testing.utils import assert_allclose
+from numpy.core.numeric import allclose
 
 
 __all__ = ['SimpleMDP']
@@ -24,7 +25,9 @@ class SimpleMDP():
         for s in state_dist:
             self.is_state(s)
         p = sum(state_dist.values())
-        assert_allclose(p, 1.0)
+        if not allclose(p, 1.0):
+            raise ValueError('PD sums to %f' % p)
+
         
     @abstractmethod
     def states(self):
@@ -45,6 +48,11 @@ class SimpleMDP():
     def reward(self, state, action, state2):
         pass
 
+    @abstractmethod
+    def get_start_dist(self):
+        """ Return the start distribution (episodic) """
+        pass
+
     def evolve_actions(self, state_dist, actions):
         p = state_dist
         for a in actions:
@@ -59,7 +67,7 @@ class SimpleMDP():
             self.is_state_dist(conditional)
             for s2, p_s2 in conditional.items():
                 p2[s2] += p_s2 * p_s1
-        return dict(p2)
+        return dict(**p2)
 
     # Debug
     @abstractmethod
@@ -68,4 +76,24 @@ class SimpleMDP():
             dist: hash states -> value >= 0 
         """
         pass
+
+    @abstractmethod
+    def display_state_values(self, pylab, state_values):
+        pass
+
+    @abstractmethod
+    def display_policy(self, pylab, det_policy):
+        pass
+
+class SimplePOMDP(SimpleMDP):
+
+    def get_observations(self):
+        """ Returns a list of all possible observations. """
+        pass
+
+    def get_observations_dist(self, state):
+        """ Returns the pd of observations given state. """
+
+
+
 

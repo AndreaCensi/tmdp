@@ -15,3 +15,11 @@
   code: 
   - gridworld.TishbyMaze2
   - fail: 0.3
+
+
+- id: poshape1
+  desc: ""
+  code:
+  - gridworld.POShape1
+  - p_fail: 0.5
+    p_loc: 0.5
