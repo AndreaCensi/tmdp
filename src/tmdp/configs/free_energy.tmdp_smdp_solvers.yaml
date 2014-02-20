@@ -1,0 +1,36 @@
+- id: fe-m-${it}-${beta}
+  desc: Free energy
+  code:
+  - tmdp.meat.free_energy.FreeEnergySolver
+  - beta: "${beta}"
+    max_iterations: "${it}"
+    use_mdp_guess: true
+    z_diff_threshold: 0.000001
+
+- id: fe-r-${it}-${beta}
+  desc: Free energy
+  code:
+  - tmdp.meat.free_energy.FreeEnergySolver
+  - beta: "${beta}"
+    max_iterations: "${it}"
+    use_mdp_guess: false
+    z_diff_threshold: 0.000001
+
+- id: fe-r-500-0.0001
+- id: fe-r-500-0.001
+- id: fe-r-500-0.01
+- id: fe-r-500-0.05
+- id: fe-r-500-0.5
+- id: fe-r-500-5
+
+# - id: fe-m-500-0.01
+# - id: fe-m-500-0.05
+# - id: fe-m-500-0.5
+# - id: fe-m-500-5
+# - id: fe-m-500-50
+
+# - id: fe-r-500-0.01
+# - id: fe-r-500-0.5
+
+# - id: fe-r-50-0.01
+# - id: fe-m-50-0.5

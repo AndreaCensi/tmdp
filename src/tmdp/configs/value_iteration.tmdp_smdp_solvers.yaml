@@ -1,0 +1,11 @@
+- id: vit
+  desc: Value Iteration
+  code: 
+  - tmdp.meat.value_it.VITMDPSolver
+  - least_committed: False
+
+- id: vitlc
+  desc: Value Iteration
+  code: 
+  - tmdp.meat.value_it.VITMDPSolver
+  - least_committed: True

@@ -1,16 +1,11 @@
-
 from contracts import contract
 
-import numpy as np
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from reprep import Report
 from tmdp import get_conftools_tmdp_smdps
-from tmdp.mdp_utils import run_trajectories
-from tmdp.meat.free_energy import free_energy_iteration, report_free_energy
-from tmdp.meat.value_it import vit_solve, policy_from_value
+from tmdp.mdp_utils.mdps_utils import all_actions, dist_evolve
 
 from .main import TMDP
-from tmdp.mdp_utils.mdps_utils import all_actions, dist_evolve
 
 
 __all__ = ['MDPShow']
@@ -65,11 +60,12 @@ def report_actions(mdp):
 
     for i, a in enumerate(actions):
         f = r.figure()
-        conditional = dict((s, mdp.transition(s, a))
-                           for s in start)
-        s2 = dist_evolve(start, conditional)
+        P = start
+        for _ in range(4):
+            conditional = dict((s, mdp.transition(s, a)) for s in P)
+            P = dist_evolve(P, conditional)
         with f.plot('step1') as pylab:
-            mdp.display_state_dist(pylab, s2)
+            mdp.display_state_dist(pylab, P)
     return r
 
 

@@ -7,6 +7,7 @@ from .drawing import (display_policy, display_state_values,
     display_state_dist)
 import numpy as np
 from tmdp import SimpleMDP
+from gridworld.grid_world import GridGeometry
 
 
 __all__ = ['GridWorld']
@@ -21,7 +22,7 @@ class GridWorld(SimpleMDP):
         self._fail = fail
 
     def get_goal(self):
-        return [self._goal]
+        return self._goal
 
     def get_map(self):
         return self._map
@@ -50,8 +51,8 @@ class GridWorld(SimpleMDP):
 
     def transition(self, state, action):
         # Goal is absorbing state
-        if state == self._goal:
-            return {self._goal: 1.0}
+        if state in self._goal:
+            return {state: 1.0}
 
         s2 = self._next_cell(state, action)
         p = {}
@@ -63,7 +64,7 @@ class GridWorld(SimpleMDP):
         return p
 
     def reward(self, state, action, state2):  # @UnusedVariable
-        if state == self._goal:
+        if state in self._goal:
             return 0.0
         else:
             if state == state2:  # bumped into wall
@@ -75,10 +76,13 @@ class GridWorld(SimpleMDP):
         # return -1
 
     def display_policy(self, pylab, det_policy):
-        display_policy(self, pylab, det_policy)
+        grid = GridGeometry(self._map)
+        display_policy(grid, pylab, det_policy)
 
     def display_state_values(self, pylab, state_values):
-        display_state_values(self, pylab, state_values)
+        grid = GridGeometry(self._map)
+        display_state_values(grid, pylab, state_values)
 
     def display_state_dist(self, pylab, state_dist):
-        display_state_dist(self, pylab, state_dist)
+        grid = GridGeometry(self._map)
+        display_state_dist(grid, pylab, state_dist)

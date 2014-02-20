@@ -10,6 +10,7 @@ from tmdp.meat.free_energy import free_energy_iteration, report_free_energy
 from tmdp.meat.value_it import vit_solve, policy_from_value
 
 from .main import TMDP
+from tmdp.mdp_utils.mdps_utils import all_actions, is_uniform
 
 
 __all__ = ['VitSolve']
@@ -45,16 +46,22 @@ def jobs_vit_display(context, id_mdp):
     r = context.comp_config(report_mdp_display, mdp)
     context.add_report(r, 'report_mdp_display')
 
-
 def report_mdp_display(mdp):
+    r = Report()
+
+    if not is_uniform(mdp):
+        r.text('warn', 'Cannot create simulation of pds because not actions'
+               ' are available in all states.')
+        return r
+
     states = list(mdp.states())
-    actions = list(mdp.actions())
+    actions = all_actions(mdp)
     p = {states[0]: 1.0}
 
     N = 10
     plan = [actions[j] for j in np.random.randint(0, len(actions) - 1, N)]
     
-    r = Report()
+
     f = r.figure()
     for i, a in enumerate(plan):
         with f.plot('p%d' % i) as pylab:
@@ -88,11 +95,13 @@ def report_maze_policy(r, mdp, policy):
 
         mdp.display_policy(pylab, policy)
 
-    state_dist = run_trajectories(mdp, start=(2, 2), policy=policy,
+    state_dist = run_trajectories(mdp, start=mdp.get_start_dist(), policy=policy,
                                   nsteps=1000, ntraj=100,
-                                  stop_at=(11, 11))
-    with f.plot('state_dist') as pylab:
-        mdp.display_state_dist(pylab, state_dist)
+                                  goal=mdp.get_goal())
+
+    if state_dist:
+        with f.plot('state_dist') as pylab:
+            mdp.display_state_dist(pylab, state_dist)
 
 
 

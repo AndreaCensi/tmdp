@@ -28,6 +28,10 @@ class SimpleMDP():
         if not allclose(p, 1.0):
             raise ValueError('PD sums to %f' % p)
 
+    def is_state_set(self, x):
+        for s in x:
+            self.is_state(s)
+
         
     @abstractmethod
     def states(self):

@@ -1,8 +1,17 @@
 from collections import defaultdict
 
-from .prob_utils import sample_from_dist
 from numpy.testing.utils import assert_allclose
 
+from .prob_utils import sample_from_dist
+
+
+def is_uniform(mdp):
+    """ Returns true if all actions are available in all states. """
+    all_a = set(all_actions(mdp))
+    for s in mdp.states():
+        if not set(mdp.actions(s)) == all_a:
+            return False
+    return True
 
 def all_actions(mdp):
     actions = set()
@@ -11,24 +20,26 @@ def all_actions(mdp):
     return sorted(list(actions))
 
 
-def run_trajectories(mdp, start, policy, nsteps, ntraj, stop_at):
+def run_trajectories(mdp, start, policy, nsteps, ntraj, goal):
     """ Returns prob. dist over states. """
     ds = defaultdict(lambda:0)
     for _ in range(ntraj):
-        states = run_trajectory(mdp, start, policy, nsteps, stop_at)
-        if states[-1] != stop_at:
+        s0 = sample_from_dist(start)
+        states = run_trajectory(mdp, s0, policy, nsteps, goal)
+        if not states[-1] in goal:
             continue
         for s in states:
             ds[s] += (1.0 / ntraj) * (1.0 / len(states))
     return dict(ds)  # XXX
 
 
-def run_trajectory(mdp, start, policy, nsteps, stop_at):
+
+def run_trajectory(mdp, start, policy, nsteps, goal):
     state = start
     traj = []
     for _ in range(nsteps):
         traj.append(state)
-        if state == stop_at:
+        if state in goal:
             break
         action = sample_from_dist(policy[state])
         state2_dist = mdp.transition(state, action)
@@ -56,9 +67,6 @@ def dist_evolve(p, conditional):
             res[s2] += p_s * p_s2
 
     res = dict(**res)
-    print p
-    print conditional
-    print res
     assert_is_dist(res)
     return res
     

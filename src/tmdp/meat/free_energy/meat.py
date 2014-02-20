@@ -1,21 +1,26 @@
 from collections import defaultdict
-import numpy as np
 import warnings
+
+import numpy as np
+from tmdp.mdp_utils import all_actions
 from tmdp.mdp_utils.prob_utils import _uniform_dist
-from tmdp.mdp_utils.mdps_utils import all_actions
-from tmdp.meat.value_it.meat import value_diff
+from tmdp.meat.value_it.meat import value_diff, get_mdp_policy
 
 
-
-def free_energy_iteration(mdp, beta, min_iterations=100, max_iterations=100, threshold=1e-8):
+def free_energy_iteration(mdp, beta, use_mdp_guess, max_iterations, z_diff_threshold, min_iterations=4):
     # average state distribution
     p_hat = uniform_state_dist(mdp)
     # average policy
     pi_hat = uniform_actions_dist(mdp)
     # optimal policy, starts as uniform on actions
-    pi = dict([(s, _uniform_dist(mdp.actions(s))) for s in mdp.states()])
-    # no, use mdp policy
-#     pi = get_mdp_policy(mdp, gamma=1)
+
+    if use_mdp_guess:
+        print('Using MDP guess')
+        pi = get_mdp_policy(mdp, gamma=1)
+    else:
+        print('Using random guess')
+        pi = dict([(s, _uniform_dist(mdp.actions(s))) for s in mdp.states()])
+
     # free energy, represented as state -> action -> value,
     # starts at 1.0
     F = {}
@@ -44,23 +49,33 @@ def free_energy_iteration(mdp, beta, min_iterations=100, max_iterations=100, thr
         Z = Z_2
         iterations.append(dict(F=F, p_hat=p_hat, pi_hat=pi_hat, pi=pi, Z=Z))
 
-        diff_Z = value_diff(iterations[-1]['Z'],
-                            iterations[-2]['Z'])
+        diff_F = get_diff_F(iterations[-2]['F'], iterations[-1]['F'])
+        diff_Z = value_diff(iterations[-1]['Z'], iterations[-2]['Z'])
         Zm = np.mean(Z.values())
-        print format_compact(pi_hat)
-        print('%5d avg Z: %10.12f   diff_Z : %10.12f' % (it, Zm, diff_Z))
-#         if it > min_iterations and diff_Z < threshold:
-#             break
+        # print format_compact(pi_hat)
+        print('%5d avg Z: %10.12f  diff_F: %20.8f diff_Z : %10.12f' % (it, Zm, diff_F, diff_Z))
+        if it > min_iterations and diff_F < z_diff_threshold:
+            break
     res = {}
-    res['params'] = dict(beta=beta, threshold=threshold)
+    res['params'] = dict(beta=beta, z_diff_threshold=z_diff_threshold,
+                         max_iterations=max_iterations, use_mdp_guess=use_mdp_guess,
+                         min_iterations=min_iterations)
     res['iterations'] = iterations
     return res
 
-def format_compact(p):
-    s = ""
-    for x, p_x in p.items():
-        s += '%s: %.3f ' % (x, p_x)
-    return s
+def get_diff_F(F1, F2):
+    d = 0
+    for s in F1:
+        for a in F1[s]:
+            d += np.abs(F1[s][a] - F2[s][a])
+    return d
+
+# 
+# def format_compact(p):
+#     s = ""
+#     for x, p_x in p.items():
+#         s += '%s: %.3f ' % (x, p_x)
+#     return s
 
 
 #
@@ -147,8 +162,12 @@ def iterate_F(F, mdp, p_hat, pi, pi_hat, beta):
     for s in mdp.states():
         F2[s] = {}
         for a in mdp.actions(s):
-            F2[s][a] = iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a)
+            if s in mdp.get_goal():
+                F2[s][a] = 0
+            else:
+                F2[s][a] = iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a)
     return F2
+
 
 def iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a):
     assert a in mdp.actions(s)
@@ -192,6 +211,9 @@ def uniform_state_dist(mdp):
     """ Returns uniform p.d. over states. """
     return _uniform_dist(mdp.states())
 
+
 def uniform_actions_dist(mdp):
     """ Returns uniform p.d. over states. """
     return _uniform_dist(all_actions(mdp))
+
+

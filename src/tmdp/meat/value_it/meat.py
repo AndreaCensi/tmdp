@@ -9,7 +9,7 @@ def get_mdp_policy(mdp, gamma):
     return policy
 
 
-def policy_from_value(mdp, values):
+def policy_from_value_least_committed(mdp, values):
     """ values: state -> value """
     P = {}
     for s in mdp.states():
@@ -18,13 +18,19 @@ def policy_from_value(mdp, values):
         #  P[s] = { best_action(mdp, values, s): 1.0 }
     return P
 
-#
-# def best_action(mdp, V, s, gamma=1):
-#     actions = mdp.actions(s)
-#     vs = [Q(mdp, V, s, a, gamma=gamma)
-#           for a in actions]
-#     best = np.argmax(vs)
-#     return actions[best]
+def policy_from_value(mdp, values):
+    """ values: state -> value """
+    P = {}
+    for s in mdp.states():
+        P[s] = { best_action(mdp, values, s): 1.0 }
+    return P
+
+def best_action(mdp, V, s, gamma=1):
+    actions = mdp.actions(s)
+    vs = [Q(mdp, V, s, a, gamma=gamma)
+          for a in actions]
+    best = np.argmax(vs)
+    return actions[best]
 
 
 def best_actions(mdp, V, s, gamma=1, threshold=1e-5):
@@ -46,6 +52,7 @@ def Q(mdp, V, s, a, gamma=1):
         f_a += p_s2 * (R_s_s2_a + gamma * V[s2])
     return f_a
 
+
 def vit_solve(mdp, gamma=1, threshold=1e-7):
     V = {}
     for s in mdp.states():
@@ -58,7 +65,9 @@ def vit_solve(mdp, gamma=1, threshold=1e-7):
                   for a in mdp.actions(s)]
             V2[s] = max(vs)
         change = value_diff(V, V2)
-        # print('Change: %s' % change)
+        # print V2
+        # print 'goal', mdp.get_goal()
+        print('Change: %s' % change)
         V = V2
         if change < threshold:
             break

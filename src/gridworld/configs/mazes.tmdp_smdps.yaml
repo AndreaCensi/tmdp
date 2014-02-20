@@ -1,22 +1,29 @@
 - id: tmaze
   desc: Maze used in Tishby's paper
   code: 
-  - gridworld.TishbyMaze
+  - gridworld.TishbyMazeOrig
   - {}
 
 - id: tmaze2
-  desc: "Maze used in Tishby's paper, but no bumping is allowed."
+  desc: "Maze used in Tishby's paper, with sqrt(2) cost"
   code: 
   - gridworld.TishbyMaze2
   - {}
 
-- id: tmaze2f
-  desc: "Failure in actions (0.3)"
-  code: 
-  - gridworld.TishbyMaze2
-  - fail: 0.3
 
+# - id: tmaze2f
+#   desc: "Failure in actions (0.3)"
+#   code: 
+#   - gridworld.TishbyMaze2
+#   - fail: 0.3
 
+- id: pomaze1
+  desc: "Tishby maze, with failures"
+  code:
+  - gridworld.POMaze1
+  - p_fail: 0.5
+    p_loc: 0.5
+    
 - id: poshape1
   desc: ""
   code:
