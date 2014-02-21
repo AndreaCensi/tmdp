@@ -4,13 +4,24 @@
   - gridworld.TishbyMazeOrig
   - {}
 
+- id: rmaze
+  desc: Maze used in Rubin's paper
+  code: 
+  - gridworld.RubinMazeOrig
+  - {}
+  
 - id: tmaze2
   desc: "Maze used in Tishby's paper, with sqrt(2) cost"
   code: 
   - gridworld.TishbyMaze2
   - {}
 
-
+- id: tmazer
+  desc: "Maze with resetting"
+  code:
+  - gridworld.TishbyMazeReset
+  - {}
+  
 # - id: tmaze2f
 #   desc: "Failure in actions (0.3)"
 #   code: 

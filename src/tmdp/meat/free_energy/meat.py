@@ -3,11 +3,12 @@ import warnings
 
 import numpy as np
 from tmdp.mdp_utils import all_actions
-from tmdp.mdp_utils.prob_utils import _uniform_dist
+from tmdp.mdp_utils.prob_utils import _uniform_dist, _random_dist
 from tmdp.meat.value_it.meat import value_diff, get_mdp_policy
 
 
-def free_energy_iteration(mdp, beta, use_mdp_guess, max_iterations, z_diff_threshold, min_iterations=4):
+def free_energy_iteration(mdp, beta, use_mdp_guess, max_iterations,
+                          z_diff_threshold, min_iterations=4):
     # average state distribution
     p_hat = uniform_state_dist(mdp)
     # average policy
@@ -19,29 +20,29 @@ def free_energy_iteration(mdp, beta, use_mdp_guess, max_iterations, z_diff_thres
         pi = get_mdp_policy(mdp, gamma=1)
     else:
         print('Using random guess')
-        pi = dict([(s, _uniform_dist(mdp.actions(s))) for s in mdp.states()])
+
+        # pi = dict([(s, _uniform_dist(mdp.actions(s))) for s in mdp.states()])
+        pi = dict([(s, _random_dist(mdp.actions(s))) for s in mdp.states()])
 
     # free energy, represented as state -> action -> value,
-    # starts at 1.0
     F = {}
     for s in mdp.states():
         F[s] = {}
         for a in mdp.actions(s):
-            F[s][a] = 1.0
+            warnings.warn('using random free energy')
+            F[s][a] = 0.0
+            F[s][a] = np.random.rand()
 
-    warnings.warn('we do not need this')
-#     F = iterate_F(F, mdp, p_hat, pi, pi_hat, beta)
     Z = compute_Z(mdp, pi_hat, F)
 
     iterations = []
     iterations.append(dict(F=F, p_hat=p_hat, pi_hat=pi_hat, pi=pi, Z=Z))
 
     for it in range(max_iterations):
-        F_2 = iterate_F(F, mdp, p_hat, pi, pi_hat, beta)
-        # F_2 = normalize_F(mdp, F_2)
+        F_2 = iterate_F(F=F, mdp=mdp, p_hat=p_hat, pi=pi, pi_hat=pi_hat, beta=beta)
         pi_hat_2 = compute_pi_hat(pi, p_hat)
-        Z_2 = compute_Z(mdp, pi_hat, F)
-        pi_2 = compute_pi(mdp, pi_hat, Z_2, F)
+        Z_2 = compute_Z(mdp, pi_hat, F_2)
+        pi_2 = compute_pi(mdp, pi_hat, Z_2, F_2)
 
         F = F_2
         pi = pi_2
@@ -103,7 +104,8 @@ def compute_pi(mdp, pi_hat, Z, F):
                 if F[s][a] < 500:
                     pi[s][a] = pi_hat[a] * np.exp(-F[s][a]) / Z[s]
                 else:
-                    pi[s][a] = 0
+                    print('approximating because F = %s' % F[s][a])
+                    pi[s][a] = 0.0
             except FloatingPointError:
                 print('pi_hat[a]: %s' % pi_hat[a])
                 print('F[s][a]: %s' % F[s][a])
@@ -132,7 +134,7 @@ def compute_Z(mdp, pi_hat, F):
     # Z is a function over states
     Z = {}
     for s in mdp.states():
-        Z[s] = 0
+        Z[s] = 0.0
         s_actions = mdp.actions(s)
         for a, p_a in pi_hat.items():
             if not a in s_actions:
@@ -141,7 +143,8 @@ def compute_Z(mdp, pi_hat, F):
                 if F[s][a] < 500:
                     Z[s] += p_a * np.exp(-F[s][a])
                 else:
-                    Z[s] += 0
+                    print('approximating because F = %s' % F[s][a])
+                    Z[s] += 0.0
             except FloatingPointError:
                 print('trying to compute exp(%s)' % (-F[s][a]))
                 raise
@@ -163,23 +166,24 @@ def iterate_F(F, mdp, p_hat, pi, pi_hat, beta):
         F2[s] = {}
         for a in mdp.actions(s):
             if s in mdp.get_goal():
-                F2[s][a] = 0
+#                 warnings.warn('boundary condition strange')
+                F2[s][a] = 0.0
+#                 F2[s][a] = 100.0
             else:
-                F2[s][a] = iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a)
+                F2[s][a] = iterate_F_s_a(F=F, mdp=mdp, p_hat=p_hat, pi=pi,
+                                         pi_hat=pi_hat, beta=beta, s=s, a=a)
     return F2
 
 
 def iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a):
     assert a in mdp.actions(s)
     # average over dynamics
-    p = mdp.transition(s, a)
+
     res = 0.0
-    for s2, p_s2 in p.items():
+    for s2, p_s2 in mdp.transition(s, a).items():
         R = mdp.reward(s, a, s2)
         G_ = G(mdp, pi, pi_hat, F, s2)
         if p_s2 == 0:
-            # print s, a
-            # print p
             frac = 0.0
         else:
             frac = np.log(p_s2) - np.log(p_hat[s2])
@@ -190,11 +194,12 @@ def iterate_F_s_a(F, mdp, p_hat, pi, pi_hat, beta, s, a):
 
 def G(mdp, pi, pi_hat, F, s2):
     # average over actions
-    f = 0
+    f = 0.0
     for a2, p_a2 in pi[s2].items():
         assert a2 in mdp.actions(s2)
         if p_a2 == 0:
-            frac = 0
+            print a2, p_a2
+            frac = 0.0
         else:
             try:
                 frac = np.log(p_a2) - np.log(pi_hat[a2])

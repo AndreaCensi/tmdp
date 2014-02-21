@@ -2,7 +2,6 @@ from abc import abstractmethod
 from collections import defaultdict
 
 from contracts import ContractsMeta, new_contract
-from numpy.testing.utils import assert_allclose
 from numpy.core.numeric import allclose
 
 

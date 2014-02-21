@@ -1,4 +1,3 @@
-
 from contracts import contract
 
 from quickapp import CompmakeContext, QuickApp
@@ -45,7 +44,7 @@ class Solve(TMDP.get_sub(), QuickApp):
                 cc.add_extra_report_keys(id_solver=id_solver)
                 jobs_solve(cc, mdp, id_solver)
 
-        context.create_dynamic_index_job()
+
 
 
 def jobs_solve(context, mdp, id_solver):

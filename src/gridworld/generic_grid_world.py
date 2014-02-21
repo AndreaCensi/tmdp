@@ -1,7 +1,8 @@
 from contracts import contract
-from gridworld.grid_world import GridGeometry
-from tmdp.mdp import SimpleMDP
-from gridworld.constants import GridWorldsConstants
+
+from .constants import GridWorldsConstants
+from .grid_world import GridGeometry
+from tmdp import SimpleMDP
 
 
 class GenericGridWorld(SimpleMDP):

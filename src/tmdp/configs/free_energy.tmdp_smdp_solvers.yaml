@@ -5,7 +5,7 @@
   - beta: "${beta}"
     max_iterations: "${it}"
     use_mdp_guess: true
-    z_diff_threshold: 0.000001
+    z_diff_threshold: 0.0001
 
 - id: fe-r-${it}-${beta}
   desc: Free energy
@@ -14,14 +14,17 @@
   - beta: "${beta}"
     max_iterations: "${it}"
     use_mdp_guess: false
-    z_diff_threshold: 0.000001
+    z_diff_threshold: 0.0001
 
+- id: fe-r-500-0
 - id: fe-r-500-0.0001
-- id: fe-r-500-0.001
+# - id: fe-r-500-0.001
 - id: fe-r-500-0.01
-- id: fe-r-500-0.05
 - id: fe-r-500-0.5
-- id: fe-r-500-5
+# - id: fe-r-500-0.05
+# - id: fe-r-500-0.5
+# - id: fe-r-500-50
+# - id: fe-r-500-5
 
 # - id: fe-m-500-0.01
 # - id: fe-m-500-0.05
@@ -34,3 +37,20 @@
 
 # - id: fe-r-50-0.01
 # - id: fe-m-50-0.5
+
+
+- id: irl-${it}-${beta}
+  desc: INFO-RL
+  code:
+  - tmdp.meat.inforl.INFORL
+  - beta: "${beta}"
+    max_iterations: "${it}"
+    use_mdp_guess: false
+    z_diff_threshold: 0.000001
+
+- id: irl-2000-10.0
+- id: irl-2000-1.0
+- id: irl-2000-0.1
+- id: irl-2000-0.01
+- id: irl-2000-0.001
+

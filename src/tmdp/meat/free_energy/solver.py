@@ -62,3 +62,12 @@ class FreeEnergySolver(SimpleMDPSolver):
                 x.append(median)
             pylab.plot(x)
 
+        f = r.figure('policies')
+        for i in [0, 1, 2, 10, 15, 20, 25, 30]:
+            policy = its[i]['pi']
+            with f.plot('it%04d' % i) as pylab:
+                mdp.display_policy(pylab, policy)
+
+
+
+

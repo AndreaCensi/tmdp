@@ -31,7 +31,7 @@ class GridWorld2(GenericGridWorld):
 
 
     def transition(self, state, action):
-        assert action in self.actions(state)
+        assert action in self.actions(state), '%s not in %s' % (action, self.actions(state))
         # Goal is absorbing state
         if state in self._goal:
             return {state: 1.0}
