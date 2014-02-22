@@ -9,11 +9,19 @@
   code: 
   - gridworld.RubinMazeOrig
   - {}
-  
-- id: tmaze2
+
+
+- id: rmazed
+  desc: "Maze used in Rubin's paper, with sqrt(2) cost"
+  code: 
+  - gridworld.RubinMazeDiag
+  - {}
+
+
+- id: tmazed
   desc: "Maze used in Tishby's paper, with sqrt(2) cost"
   code: 
-  - gridworld.TishbyMaze2
+  - gridworld.TishbyMazeDiag
   - {}
 
 - id: tmazer

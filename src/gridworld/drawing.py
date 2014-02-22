@@ -19,11 +19,12 @@ def _display_map(grid, goal, pylab):
 
     gg = GridGeometry(gridmap)
 
+    obstacle_fill = '#808080'
     for (i, j) in product(range(H), range(W)):
         if gg.is_empty((i, j)):
             attrs = dict(fc='white', ec='black')
         else:
-            attrs = dict(fc='black', ec='white')
+            attrs = dict(fc=obstacle_fill, ec='white')
         a.add_patch(Rectangle((i, j), 1, 1, **attrs))
 
     yield pylab

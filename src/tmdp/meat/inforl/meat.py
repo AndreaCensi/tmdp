@@ -62,7 +62,6 @@ def compute_Z(mdp, beta, rho, F):
         Z[s] = 0.0
         for a, rho_a in rho[s].items():
             x = 0.0
-
             for s2, p_s2 in mdp.transition(s, a).items():
                 x += p_s2 * (beta * mdp.reward(s, a, s2) - F[s2])
             Z[s] += rho_a * np.exp(x)

@@ -16,8 +16,14 @@ class RubinMazeOrig(GridWorld2):
         grid, start, goal = get_rubin_maze()
         GridWorld2.__init__(self, map=grid, goal=goal, fail=fail, diagonal_cost=False, start=start)
 
+class RubinMazeDiag(GridWorld2):
 
-class TishbyMaze2(GridWorld2):
+    def __init__(self, fail=0):
+        grid, start, goal = get_rubin_maze()
+        GridWorld2.__init__(self, map=grid, goal=goal, fail=fail, diagonal_cost=True, start=start)
+
+class TishbyMazeDiag(GridWorld2):
+    """ Using diagonal cost """
 
     def __init__(self, fail=0):
         grid, start, goal = get_maze1()
