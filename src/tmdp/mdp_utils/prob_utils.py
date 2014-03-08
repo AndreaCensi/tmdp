@@ -1,5 +1,6 @@
-from tmdp.mdp_utils.slice_sampling import slice_sampler
 import numpy as np
+from tmdp.mdp_utils.slice_sampling import slice_sampler
+
 
 def sample_from_dist(p):
     values = []

@@ -1,8 +1,21 @@
 - id: tmaze
-  desc: Maze used in Tishby's paper
+  desc: Maze used in Tishby's paper. Actions differ state-by-state.
   code: 
   - gridworld.TishbyMazeOrig
   - {}
+
+- id: tmazb
+  desc: Maze used in Tishby's paper. Bumps
+  code: 
+  - gridworld.TishbyMazeBump
+  - bump_reward: -100
+
+- id: tmazbd
+  desc: "Maze used in Tishby's paper. Bumps, diagonal"
+  code: 
+  - gridworld.TishbyMazeBumpD
+  - bump_reward: -100
+
 
 - id: rmaze
   desc: Maze used in Rubin's paper
@@ -49,3 +62,12 @@
   - gridworld.POShape1
   - p_fail: 0.5
     p_loc: 0.5
+
+
+
+
+- id: "intruder-${map}"
+  desc: ""
+  code:
+  - grid_intruder.IntruderPOMDP
+  - gridmap: "${map}"

@@ -3,6 +3,7 @@ from contracts import contract
 from .constants import GridWorldsConstants
 from .grid_world import GridGeometry
 from tmdp import SimpleMDP
+from gridworld.drawing import display_neigh_field_value
 
 
 class GenericGridWorld(SimpleMDP):
@@ -48,3 +49,6 @@ class GenericGridWorld(SimpleMDP):
         from gridworld.drawing import display_state_dist
         display_state_dist(grid=self._grid, goal=self.get_goal(),
                            pylab=pylab, state_dist=state_dist)
+
+    def display_neigh_field_value(self, pylab, neig_values):
+        display_neigh_field_value(self._grid, pylab, neig_values)

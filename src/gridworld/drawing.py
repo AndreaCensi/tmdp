@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from itertools import product
 
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Circle
 
 import numpy as np
 from gridworld.grid_world import GridGeometry
@@ -102,6 +102,26 @@ def display_state_dist(grid, goal, pylab, state_dist):
             p = p / max_p
             color = c1 * (1 - p) + c2 * p
             _display_cell(pylab, (i, j), fc=color, ec='red')
+
+
+def display_neigh_field_value(grid, pylab, neig_values, marker_radius=0.2):
+    values = np.abs(np.array(neig_values.values()))
+    
+    with _display_map(grid, [], pylab):
+        a = pylab.gca()
+        for (s1, s2), V in neig_values.items():
+            s1 = np.array(s1)
+            s2 = np.array(s2)
+            p = (s1 + s2) / 2.0 + np.array([0.5, 0.5])
+            ec = 'black'
+            if values.max() > 0:
+                c = -V / values.max()
+            else:
+                c = -V
+            fc = [c, c, c]
+            if V == 0:
+                continue
+            a.add_patch(Circle((p[0], p[1]), radius=marker_radius, fc=fc, ec=ec))
 
 
 

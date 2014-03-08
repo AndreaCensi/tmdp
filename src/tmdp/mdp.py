@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from contracts import ContractsMeta, new_contract
 from numpy.core.numeric import allclose
+from fractions import Fraction
 
 
 __all__ = ['SimpleMDP']
@@ -63,13 +64,20 @@ class SimpleMDP():
             p = p.evolve(p, a)
         return p
 
-    def evolve(self, state_dist, action):
-        p2 = defaultdict(lambda:0.0)
+    def evolve(self, state_dist, action, use_fraction=False):
+        if use_fraction:
+            p2 = defaultdict(lambda:Fraction(0))
+        else:
+            p2 = defaultdict(lambda:Fraction(0.0))
         for s1, p_s1 in state_dist.items():
             conditional = self.transition(s1, action)
             self.is_state_dist(conditional)
             for s2, p_s2 in conditional.items():
-                p2[s2] += p_s2 * p_s1
+                if  p_s2 * p_s1 > 0:
+                    p2[s2] += p_s2 * p_s1
+        for s in list(p2):
+            if p2[s] == 0:
+                del p2[s]
         return dict(**p2)
 
     # Debug
@@ -97,6 +105,18 @@ class SimplePOMDP(SimpleMDP):
     def get_observations_dist(self, state):
         """ Returns the pd of observations given state. """
 
+    def get_observations_dist_given_belief(self, belief, use_fraction=False):
+        if use_fraction:
+            p = defaultdict(lambda:Fraction(0))
+        else:
+            p = defaultdict(lambda:0.0)
+        for state, p_state in belief.items():
+            for y, p_y in self.get_observations_dist(state).items():
+                # print('y', y, 'p_y', p_y)
+                if p_state * p_y > 0:
+                    p[y] += p_state * p_y
+        return dict(**p)
 
-
+    class ObsNotPossible(Exception):
+        pass
 

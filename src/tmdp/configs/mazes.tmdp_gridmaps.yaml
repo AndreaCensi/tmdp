@@ -1,0 +1,30 @@
+- id: tmaze
+  desc: Tishby's maze
+  code:
+  - gridmaps.map_tmaze
+  - {}
+
+- id: rmaze
+  desc: Rubin's maze
+  code:
+  - gridmaps.map_rmaze
+  - {}
+
+- id: imap1
+  desc: intruder map 1
+  code:
+  - gridmaps.map_intruder_1
+  - {}
+
+- id: imap2
+  desc: intruder map 2
+  code:
+  - gridmaps.map_intruder_2
+  - {}
+
+  
+- id: imap3
+  desc: intruder map 3
+  code:
+  - gridmaps.map_intruder_3
+  - {}

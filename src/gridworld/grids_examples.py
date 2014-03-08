@@ -3,12 +3,29 @@ from gridworld.grid2 import GridWorld2
 from gridworld.gridpo import POGridWorld
 import numpy as np
 from gridworld.grid_world_reset import GridWorldReset
+from gridworld.grid_bump import GridBump
 
 class TishbyMazeOrig(GridWorld2):
 
     def __init__(self, fail=0):
         grid, start, goal = get_maze1()
         GridWorld2.__init__(self, map=grid, goal=goal, fail=fail, diagonal_cost=False, start=start)
+
+
+
+class TishbyMazeBump(GridBump):
+
+    def __init__(self, bump_reward):
+        grid, start, goal = get_maze1()
+        GridBump.__init__(self, map=grid, goal=goal, bump_reward=bump_reward, diagonal_cost=False, start=start)
+
+class TishbyMazeBumpD(GridBump):
+
+    def __init__(self, bump_reward):
+        grid, start, goal = get_maze1()
+        GridBump.__init__(self, map=grid, goal=goal, bump_reward=bump_reward, diagonal_cost=True, start=start)
+
+
 
 class RubinMazeOrig(GridWorld2):
 
