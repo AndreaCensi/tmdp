@@ -1,20 +1,28 @@
 from memos import memoize_instance
 from tmdp import SimpleMDP
 from contracts import contract
-
+from collections import defaultdict
 
 __all__ = ['SampledMDP']
 
+def remove_defaultdict(x):
+    res = {}
+    for a, b in x.items():
+        if isinstance(b, defaultdict):
+            b = remove_defaultdict(b)
+        res[a] = b
+    return res
 
 class SampledMDP(SimpleMDP):
 
     @contract(start_dist='ddist')
     def __init__(self, states, state2actions, state2action2transition, state2action2state2reward,
-                 start_dist):
+                 start_dist, goals):
         self._states = states
-        self.state2actions = state2actions
-        self.state2action2transition = state2action2transition
-        self.state2action2state2reward = state2action2state2reward
+        self._goals = goals
+        self.state2actions = remove_defaultdict(state2actions)
+        self.state2action2transition = remove_defaultdict(state2action2transition)
+        self.state2action2state2reward = remove_defaultdict(state2action2state2reward)
         
         self.start_dist = start_dist
         self.check_correct()
@@ -47,6 +55,9 @@ class SampledMDP(SimpleMDP):
                     assert s2 in self.state2action2state2reward[s][a]
                     reward = self.state2action2state2reward[s][a][s2]
                     # assert number
+
+    def is_goal(self, s):
+        return s in self._goals
 
     def get_start_dist(self):
         return self.start_dist

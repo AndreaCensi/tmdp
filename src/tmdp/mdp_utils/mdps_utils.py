@@ -84,7 +84,6 @@ def mdp_stationary_dist(mdp, dist0, policy, l1_threshold=0.0):
             break
     return dist
 
-
 @contract(mdp=SimpleMDP, returns='cond_ddist')
 def mdp_get_transition_with_policy(mdp, policy):
     """ Gets the transition resulting from using the policy. """

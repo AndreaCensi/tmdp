@@ -61,6 +61,44 @@ def map_intruder_2():
     ]
     return GridMap(blocks=blocks)
 
+
+
+def map_intruder_4():
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, I, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, I, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_intruder_5():
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, I, W, E, E, E, E, W, W, W, W, W, I, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, W, E, E, S, E, E, E, E, E, E, E, W, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
     
 def map_tmaze():
     blocks = [

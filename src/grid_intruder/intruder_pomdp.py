@@ -119,7 +119,10 @@ class IntruderPOMDP(SimplePOMDP):
     @memoize_instance
     def get_observations(self):
         """ Observations of this POMDP are """
-        return [IntruderPOMDP.undetected] + self.gridmap.get_intruder_cells()
+        # return [IntruderPOMDP.undetected] + self.gridmap.get_intruder_cells()
+        empty_cells = list(self.gridmap.get_empty_cells())
+        sensor = [IntruderPOMDP.undetected] + self.gridmap.get_intruder_cells()
+        return list(itertools.product(empty_cells, sensor))
 
     @memoize_instance
     def get_observations_dist(self, state):
@@ -130,9 +133,9 @@ class IntruderPOMDP(SimplePOMDP):
         
         # Actually we have a deterministic 
         if self._can_see(robot, intruder):
-            return {intruder: 1}
+            return {(robot, intruder): 1}
         else:
-            return {IntruderPOMDP.undetected: 1}
+            return {(robot, IntruderPOMDP.undetected): 1}
 
     def _can_see(self, robot, intruder):
         trace = _trace_path(robot, intruder)

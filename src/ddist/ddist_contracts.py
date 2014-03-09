@@ -8,7 +8,8 @@ def ddist(dist):
     if len(dist) == 0:
         raise ValueError('Empty distribution.')
     values = dist.values()
-    s = sum(values)
+    s = float(sum(values))
+
     assert_allclose(s, 1.0, err_msg='%s != 1.0' % s)
 
 

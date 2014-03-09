@@ -28,3 +28,18 @@
   code:
   - gridmaps.map_intruder_3
   - {}
+
+
+  
+- id: imap4
+  desc: intruder map 4 (same as imap2 in spirit but only 2 intruders)
+  code:
+  - gridmaps.map_intruder_4
+  - {}
+
+
+- id: imap5
+  desc: intruder map 5 
+  code:
+  - gridmaps.map_intruder_5
+  - {}
