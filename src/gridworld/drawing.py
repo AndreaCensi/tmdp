@@ -6,11 +6,12 @@ from matplotlib.patches import Rectangle, Circle
 import numpy as np
 from gridworld.grid_world import GridGeometry
 from contracts import contract
+from reprep.graphics.filter_colormap import filter_colormap
 
 
 @contextmanager
 @contract(grid=GridGeometry)
-def _display_map(grid, goal, pylab):
+def _display_map(grid, goal, pylab, fill_empty=True):
     gridmap = grid.get_map()
     H, W = gridmap.shape
     a = pylab.gca()
@@ -22,9 +23,16 @@ def _display_map(grid, goal, pylab):
     obstacle_fill = '#808080'
     for (i, j) in product(range(H), range(W)):
         if gg.is_empty((i, j)):
-            attrs = dict(fc='white', ec='black')
+
+            if fill_empty:
+                fc = 'white'
+            else:
+                continue
+
+            attrs = dict(fc=fc, ec='black')
         else:
             attrs = dict(fc=obstacle_fill, ec='white')
+
         a.add_patch(Rectangle((i, j), 1, 1, **attrs))
 
     yield pylab
@@ -35,6 +43,19 @@ def _display_map(grid, goal, pylab):
     pylab.axis((-1, H + 1, -1, W + 1))
     pylab.axis('equal')
 
+@contract(grid=GridGeometry)
+def _display_obstacles(pylab, gg, obstacle_fill='#808080'):
+    a = pylab.gca()
+    H, W = gg.get_map().shape
+    for (i, j) in product(range(H), range(W)):
+        if gg.is_empty((i, j)):
+            continue
+        attrs = dict(fc=obstacle_fill, ec='white')
+        a.add_patch(Rectangle((i, j), 1, 1, **attrs))
+
+
+  
+    
 
 def _display_cell(pylab, state, **attrs):
     a = pylab.gca()
@@ -103,7 +124,7 @@ def display_state_dist(grid, goal, pylab, state_dist):
             color = c1 * (1 - p) + c2 * p
             _display_cell(pylab, (i, j), fc=color, ec='red')
 
-
+@contract(grid=GridGeometry)
 def display_neigh_field_value(grid, pylab, neig_values, marker_radius=0.2):
     values = np.abs(np.array(neig_values.values()))
     
@@ -125,3 +146,20 @@ def display_neigh_field_value(grid, pylab, neig_values, marker_radius=0.2):
 
 
 
+@contract(grid=GridGeometry)
+def display_sf_field_cont(grid, pylab, sf, res=0.5):
+
+    shape = grid.get_map().shape
+    xb = np.linspace(0, shape[0] * 1.0, shape[0] / res)
+    yb = np.linspace(0, shape[1] * 1.0, shape[1] / res)
+    X, Y = np.meshgrid(xb, yb)
+    print('query...')
+    values = sf.querygrid(X, Y)
+    values = np.flipud(values)
+    print('ocolormap')
+    values_rgb = filter_colormap(values, cmap='jet')
+    
+    """ display continuous values """
+    # with _display_map(grid, [], pylab, fill_empty=False):
+    pylab.imshow(values_rgb, extent=(xb[0], xb[-1], yb[0], yb[-1]))
+    _display_obstacles(pylab, grid)

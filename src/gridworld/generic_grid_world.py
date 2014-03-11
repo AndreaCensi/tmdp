@@ -18,6 +18,10 @@ class GenericGridWorld(SimpleMDP):
         self._goal = goal
         self._start = start
         
+    @contract(returns=GridGeometry)
+    def get_grid(self):
+        return self._grid
+
     def get_start_dist(self):
         return self._start
 

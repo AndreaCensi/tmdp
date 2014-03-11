@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from contracts import contract
+from matplotlib.colors import colorConverter
 
 import networkx as nx
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
@@ -12,7 +13,6 @@ from tmdp.programs.show import instance_mdp
 from tmdp.sampled_mdp import SampledMDP
 
 from .main import TMDP
-from matplotlib.colors import ColorConverter, colorConverter
 
 
 __all__ = ['POMDPList']
