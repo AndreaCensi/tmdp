@@ -1,7 +1,6 @@
 from contracts import contract
 
-from quickapp import CompmakeContext, QuickApp
-from quickapp.app_utils.subcontexts import iterate_context_names
+from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from reprep import Report
 from tmdp import get_conftools_tmdp_smdps
 from tmdp.configuration import get_conftools_tmdp_smdp_solvers

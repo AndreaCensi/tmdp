@@ -1,20 +1,33 @@
 from contracts import contract
 
+from gridworld.drawing import display_neigh_field_value
+from tmdp import SimpleMDP
+
 from .constants import GridWorldsConstants
 from .grid_world import GridGeometry
-from tmdp import SimpleMDP
-from gridworld.drawing import display_neigh_field_value
+from tmdp.configuration import get_conftools_tmdp_gridmaps
+from gridmaps.map import GridMap
+from tmdp.mdp_utils.prob_utils import _uniform_dist
+
+__all__ = ['GenericGridWorld']
 
 
 class GenericGridWorld(SimpleMDP):
     """ This implements basic stuff, but not motion/obs models. """
 
-    @contract(grid='array', goal='list', start='dict')
-    def __init__(self, grid, goal, start):
+    @contract(gridmap='str|code_spec')
+    def __init__(self, gridmap):
+    
+        _, self.gridmap = get_conftools_tmdp_gridmaps().instance_smarter(gridmap)
+        assert isinstance(self.gridmap, GridMap)
+        self._grid = GridGeometry(self.gridmap.get_obstacle_grid())
+
+        goal = self.gridmap.get_goal_cells()
+        start = _uniform_dist(self.gridmap.get_start_cells())
+        
         self.is_state_dist(start)
         self.is_state_set(goal)
 
-        self._grid = GridGeometry(grid)
         self._goal = goal
         self._start = start
         
@@ -56,3 +69,10 @@ class GenericGridWorld(SimpleMDP):
 
     def display_neigh_field_value(self, pylab, neig_values):
         display_neigh_field_value(self._grid, pylab, neig_values)
+
+
+    def get_support_points(self):
+        """ Returns a list of fundamental point to include in the sampling. """
+        return self._grid.get_wall_corners()
+
+

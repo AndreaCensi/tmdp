@@ -7,7 +7,7 @@ import networkx as nx
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from reprep import Report
 from tmdp import get_conftools_tmdp_smdps
-from tmdp.mdp_utils.mdps_utils import all_actions, mdp_stationary_dist
+from tmdp.mdp_utils import all_actions, mdp_stationary_dist
 from tmdp.meat.value_it.vit_solver import VITMDPSolver
 from tmdp.programs.show import instance_mdp
 from tmdp.sampled_mdp import SampledMDP

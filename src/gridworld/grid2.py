@@ -1,8 +1,12 @@
 from contracts import contract
 
+from gridmaps.map import GridMap
 from gridworld.constants import GridWorldsConstants
 from gridworld.generic_grid_world import GenericGridWorld
+from gridworld.grid_world import GridGeometry
 import numpy as np
+from tmdp.configuration import get_conftools_tmdp_gridmaps
+from tmdp.mdp_utils.prob_utils import _uniform_dist
 
 
 __all__ = ['GridWorld2']
@@ -12,12 +16,9 @@ class GridWorld2(GenericGridWorld):
         This is a version of the grid world where collisions are not allowed
         as actions. 
     """
-
-    @contract(map='array[HxW](int,(=0|=1))')
-    def __init__(self, map, goal, start, diagonal_cost, fail=0.3):  # @ReservedAssignment
-        """ diagonal_shortcut: if True, the cost of diagonal movement is sqrt(2) """
-        GenericGridWorld.__init__(self, goal=goal, start=start, grid=map)
-
+    @contract(gridmap='str|code_spec')
+    def __init__(self, gridmap, diagonal_cost=False, fail=0.3):
+        GenericGridWorld.__init__(self, gridmap=gridmap)
         self._diagonal_cost = diagonal_cost
         self._fail = fail
 

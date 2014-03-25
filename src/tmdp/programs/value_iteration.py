@@ -4,13 +4,14 @@ from contracts import contract
 import numpy as np
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from reprep import Report
+from reprep.plot_utils import turn_all_axes_off
 from tmdp import get_conftools_tmdp_smdps
 from tmdp.mdp_utils import run_trajectories
+from tmdp.mdp_utils.mdps_utils import all_actions, is_uniform
 from tmdp.meat.free_energy import free_energy_iteration, report_free_energy
 from tmdp.meat.value_it import vit_solve, policy_from_value
 
 from .main import TMDP
-from tmdp.mdp_utils.mdps_utils import all_actions, is_uniform
 
 
 __all__ = ['VitSolve']
@@ -82,8 +83,9 @@ def jobs_vit_solve(context, id_mdp):
     for i, (c, beta) in enumerate(iterate_context_names(context, betas)):
         c.add_extra_report_keys(beta=beta)
         iterations = its[i]
-        fe_res = c.comp(free_energy_iteration, mdp, min_iterations=iterations, max_iterations=iterations,
-                         beta=beta)
+        fe_res = c.comp(free_energy_iteration, mdp,
+                        min_iterations=iterations, max_iterations=iterations,
+                        beta=beta)
         c.add_report(c.comp(report_free_energy, mdp, fe_res), 'report_free_energy')
 
 
@@ -92,8 +94,9 @@ def jobs_vit_solve(context, id_mdp):
 def report_maze_policy(r, mdp, policy):
     f = r.figure()
     with f.plot('policy') as pylab:
-
         mdp.display_policy(pylab, policy)
+        turn_all_axes_off(pylab)
+
 
     state_dist = run_trajectories(mdp, start=mdp.get_start_dist(), policy=policy,
                                   nsteps=1000, ntraj=100,
@@ -102,6 +105,8 @@ def report_maze_policy(r, mdp, policy):
     if state_dist:
         with f.plot('state_dist') as pylab:
             mdp.display_state_dist(pylab, state_dist)
+            turn_all_axes_off(pylab)
+
 
 
 

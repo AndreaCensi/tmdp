@@ -1,9 +1,6 @@
-from contracts import contract
-
 from gridworld.constants import GridWorldsConstants
 from gridworld.generic_grid_world import GenericGridWorld
 import numpy as np
-
 
 __all__ = ['GridWorld2']
 
@@ -12,11 +9,8 @@ class GridBump(GenericGridWorld):
         In this version collisions are OK and incur a cost. 
     """
 
-    @contract(map='array[HxW](int,(=0|=1))')
-    def __init__(self, map, goal, start, diagonal_cost, bump_reward):  # @ReservedAssignment
-        """ diagonal_shortcut: if True, the cost of diagonal movement is sqrt(2).
-            bump_reward: at least <= -1. """
-        GenericGridWorld.__init__(self, goal=goal, start=start, grid=map)
+    def __init__(self, gridmap, diagonal_cost, bump_reward):  # @ReservedAssignment
+        GenericGridWorld.__init__(self, gridmap=gridmap)
 
         self._diagonal_cost = diagonal_cost
         self._bump_reward = bump_reward

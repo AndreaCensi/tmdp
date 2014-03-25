@@ -1,17 +1,19 @@
-from contracts import contract
+import itertools
 
+from contracts import contract
+from decorator import decorator
+
+from gridworld.drawing import display_sf_field_cont
 import numpy as np
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from reprep import Report
+from reprep.plot_utils.axes import turn_all_axes_off
 from tmdp import get_conftools_tmdp_smdp_solvers, get_conftools_tmdp_smdps
-from tmdp.programs.tension import get_tension_matrix
 
 from .main import TMDP
 from .show import instance_mdp
 from .solve import jobs_solve
-import itertools
-from gridworld.drawing import display_sf_field_cont
-from reprep.plot_utils.axes import turn_all_axes_off
+from .tension import get_tension_matrix
 
 
 __all__ = ['StateDiff']
@@ -48,32 +50,133 @@ class StateDiff(TMDP.get_sub(), QuickApp):
                 cc.add_extra_report_keys(id_solver=id_solver)
                 solve_result = jobs_solve(cc, mdp, id_solver)
 
-                res = cc.comp(resample, mdp, solve_result)
-                r = cc.comp(report_resample, mdp, res)
-                cc.add_report(r, 'report_resample')
-                
+                points = [100, 200, 500]
+                for c3, num_points in iterate_context_names(cc, points):
+                    c3.add_extra_report_keys(num_points=num_points)
 
-def resample(mdp, solve_result):
+                    res = c3.comp(resample, mdp, solve_result, num_points=num_points)
+
+                    c3.add_report(c3.comp(report_resample, mdp, res), 'report_resample')
+                    c3.add_report(c3.comp(report_tension, mdp, res), 'report_tension')
+
+
+
+def resample(mdp, solve_result, num_points):
     policy = solve_result['policy']
     value = solve_result['value']
     tension = get_tension_matrix(mdp, policy, value)
+    density = {a:-b for (a, b) in tension.items()}
+    density_sf = sf_from_tension(density, alpha=1.5)
 
+    support_points = mdp.get_support_points()
+    
+    shape = mdp.get_grid().get_map().shape
+    grid = mdp.get_grid()
+    def support():
+        x = np.random.rand(2)
+        return np.array([x[0] * shape[0], x[1] * shape[1]])
+        
+    def weight(p):
+        cell = np.floor(p)
+        cell = (int(cell[0]), int(cell[1]))
+        empty = grid.is_empty(cell)
+        if not empty:
+            return 0
+        d = density_sf.query(p)
+        return d
+
+    
+    sampled_points = rejection_sampling(support=support, weight=weight, N=num_points)
+    
+
+    points = support_points + sampled_points
+    from pyhull.delaunay import DelaunayTri
+    delaunay_tri = DelaunayTri(points)
+    print delaunay_tri.vertices
+    print delaunay_tri.points
+
+
+    solve_result['delaunay_tri'] = delaunay_tri
+    solve_result['sampled_points'] = sampled_points
     solve_result['tension'] = tension
+    solve_result['density_sf'] = density_sf
+    solve_result['support_points'] = support_points
     return solve_result
 
-def report_resample(mdp, resample_res):
-    tension = resample_res['tension']
+@decorator
+def aslist(f, *args, **kwargs):
+    res = []
+    for x in f(*args, **kwargs):
+        res.append(x)
+    return res
 
-    density = {a:-b for (a, b) in tension.items()}
+@aslist
+def rejection_sampling(support, weight, N):
+    n = 0
+    while n < N:
+        p = support()
+        w = weight(p)
+        if np.random.rand() > w:
+            continue
+        yield p
+        n += 1
+
+def report_resample(mdp, resample_res):
+    support_points = resample_res['support_points']
+    sampled_points = resample_res['sampled_points']
+    delaunay_tri = resample_res['delaunay_tri']
 
     r = Report()
     f = r.figure()
+    
+    with f.plot('support') as pylab:
+
+        for p in support_points:
+            pylab.plot(p[0], p[1], 'kx')
+
+        for p in sampled_points:
+            pylab.plot(p[0], p[1], 'rx')
+
+    with f.plot('triangulation') as pylab:
+        plot_triangulation(pylab, delaunay_tri)
+
+    with f.plot('both') as pylab:
+        plot_triangulation(pylab, delaunay_tri)
+
+        for p in  support_points:
+            pylab.plot(p[0], p[1], 'kx')
+
+        for p in sampled_points:
+            pylab.plot(p[0], p[1], 'rx')
+
+    return r
+
+
+def plot_triangulation(pylab, tri):
+    v = tri.vertices
+    p = tri.points
+    def line(p1, p2):
+        pylab.plot([p1[0], p2[0]], [p1[1], p2[1]], '-')
+
+    for (a, b, c) in v:
+        line(p[a], p[b])
+        line(p[a], p[c])
+        line(p[c], p[b])
+
+
+def report_tension(mdp, resample_res, resolution=0.33):
+    tension = resample_res['tension']
+    density_sf = resample_res['density_sf']
+
+    r = Report()
+    f = r.figure()
+
     with f.plot('tension1') as pylab:
         mdp.display_neigh_field_value(pylab, tension)
+        turn_all_axes_off(pylab)
 
     with f.plot('density') as pylab:
-        sf = sf_from_tension(tension, alpha=3.0)
-        display_sf_field_cont(mdp.get_grid(), pylab, sf, res=0.5)
+        display_sf_field_cont(mdp.get_grid(), pylab, density_sf, res=density_sf)
         turn_all_axes_off(pylab)
     return r
 
@@ -113,14 +216,20 @@ def iterate_indices(shape):
     else:
         raise NotImplementedError
         assert(False)
+        
+class ExpKernel():
+    def __init__(self, alpha):
+        self.alpha = alpha
+    def __call__(self, p1, p2):
+        return np.exp(-self.alpha * np.linalg.norm(p1 - p2))
 
 @contract(returns=SampledFunction)
 def sf_from_tension(neig_values, alpha):
-    kernel = lambda p1, p2: np.exp(-alpha * np.linalg.norm(p1 - p2))
+    kernel = ExpKernel(alpha)
     sf = SampledFunction(kernel=kernel)
 
     for (p1, p2), tension in neig_values.items():
-        center = (np.array(p1) + np.array(p2)) / 2.0
+        center = (np.array(p1) + np.array(p2)) / 2.0 + np.array([0.5, 0.5])
         value = tension
         sf.add_sample(center, value)
 

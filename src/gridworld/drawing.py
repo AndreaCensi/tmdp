@@ -1,11 +1,11 @@
 from contextlib import contextmanager
 from itertools import product
 
+from contracts import contract
 from matplotlib.patches import Rectangle, Circle
 
-import numpy as np
 from gridworld.grid_world import GridGeometry
-from contracts import contract
+import numpy as np
 from reprep.graphics.filter_colormap import filter_colormap
 
 
@@ -43,7 +43,7 @@ def _display_map(grid, goal, pylab, fill_empty=True):
     pylab.axis((-1, H + 1, -1, W + 1))
     pylab.axis('equal')
 
-@contract(grid=GridGeometry)
+@contract(gg=GridGeometry)
 def _display_obstacles(pylab, gg, obstacle_fill='#808080'):
     a = pylab.gca()
     H, W = gg.get_map().shape
@@ -146,7 +146,7 @@ def display_neigh_field_value(grid, pylab, neig_values, marker_radius=0.2):
 
 
 
-@contract(grid=GridGeometry)
+@contract(grid=GridGeometry, res='float,>0')
 def display_sf_field_cont(grid, pylab, sf, res=0.5):
 
     shape = grid.get_map().shape
