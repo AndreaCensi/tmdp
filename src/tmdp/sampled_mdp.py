@@ -1,7 +1,11 @@
-from memos import memoize_instance
-from tmdp import SimpleMDP
-from contracts import contract
 from collections import defaultdict
+
+from contracts import contract
+
+from memos import memoize_instance
+from reprep.utils.frozen import frozendict2
+from tmdp import SimpleMDP
+
 
 __all__ = ['SampledMDP']
 
@@ -58,6 +62,8 @@ class SampledMDP(SimpleMDP):
 
     def is_goal(self, s):
         return s in self._goals
+    def get_goals(self):  # XXX added quickly
+        return self._goals
 
     def get_start_dist(self):
         return self.start_dist
@@ -72,7 +78,7 @@ class SampledMDP(SimpleMDP):
 
     @memoize_instance
     def transition(self, state, action):
-        return dict(**self.state2action2transition[state][action])
+        return frozendict2(self.state2action2transition[state][action])
 
     @memoize_instance
     def reward(self, state, action, state2):

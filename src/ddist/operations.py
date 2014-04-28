@@ -1,10 +1,12 @@
 from collections import defaultdict
 
 from contracts import contract
+from .slice_sampling import slice_sampler
 
 
 __all__ = [
     'ddist_evolve',
+    'ddist_sample',
 ]
 
 @contract(d='ddist', cond='cond_ddist', returns='ddist')
@@ -19,3 +21,18 @@ def ddist_evolve(d, cond):
                 res[s2] += p
 
     return dict(**res)
+
+
+def ddist_sample(d):
+    values = []
+    probs = []
+    for value, prob in d.items():
+        values.append(value)
+        probs.append(prob)
+
+    #     assert sum(probs) == 1
+
+    res = slice_sampler(probs, N=1)
+    r = values[res]
+    assert r in d
+    return r

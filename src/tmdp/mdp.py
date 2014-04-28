@@ -4,6 +4,7 @@ from collections import defaultdict
 from contracts import ContractsMeta, new_contract
 from numpy.core.numeric import allclose
 from fractions import Fraction
+from reprep.utils.frozen import frozendict2
 
 
 __all__ = ['SimpleMDP']
@@ -25,6 +26,7 @@ class SimpleMDP():
         for s in state_dist:
             self.is_state(s)
         p = sum(state_dist.values())
+        p = float(p)
         if not allclose(p, 1.0):
             raise ValueError('PD sums to %f' % p)
 
@@ -65,6 +67,7 @@ class SimpleMDP():
         return p
 
     def evolve(self, state_dist, action, use_fraction=False):
+        self.is_state_dist(state_dist)
         if use_fraction:
             p2 = defaultdict(lambda:Fraction(0))
         else:
@@ -78,7 +81,7 @@ class SimpleMDP():
         for s in list(p2):
             if p2[s] == 0:
                 del p2[s]
-        return dict(**p2)
+        return frozendict2(p2)
 
     # Debug
     @abstractmethod

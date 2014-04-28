@@ -52,6 +52,7 @@ def mdp_evolve_with_policy(mdp, dist0, policy):
                     res[s2] += p
     return dict(**res)
 
+
 def ddist_format_states(states, dist):
     res = ''
     for s in states:
@@ -111,14 +112,17 @@ def run_trajectory(mdp, start, policy, nsteps, goal):
         state = sample_from_dist(state2_dist)
     return traj
 
+
 def assert_is_dist(p):
     assert isinstance(p, dict)
     assert_allclose(sum(p.values()), 1.0)
+
 
 def assert_is_conditional(p):
     assert isinstance(p, dict)
     for q in p.values():
         assert_is_dist(q)
+
 
 def dist_evolve(p, conditional):
     """ p: state -> prob

@@ -1,3 +1,4 @@
+from fractions import Fraction
 import itertools
 
 from contracts import contract
@@ -5,19 +6,18 @@ from contracts import contract
 from gridmaps.map import GridMap
 from gridworld.constants import GridWorldsConstants
 from gridworld.grid_world import GridGeometry
-from memos import memoize_limited, memoize_instance
+from memos import memoize_instance
 import numpy as np
 from reprep.utils.frozen import frozendict2
 from tmdp.configuration import get_conftools_tmdp_gridmaps
 from tmdp.mdp import SimplePOMDP
-from fractions import Fraction
 
 
 __all__ = ['IntruderPOMDP']
 
 
 class IntruderPOMDP(SimplePOMDP):
-    undetected = 'undetected'
+    undetected = 'U'
 
     @contract(gridmap='str|code_spec')
     def __init__(self, gridmap):

@@ -1,6 +1,10 @@
-from numpy.random import uniform
-import numpy
 import random
+
+import numpy
+from numpy.random import uniform
+
+
+__all__ = ['slice_sampler']
 
 def slice_sampler(px, N=1, x=None):
     """
