@@ -62,14 +62,10 @@ def report_aliasing(res, pomdp):
     mdp = res['mdp_absorbing']
     nonneg = res['nonneg']
     stationary = res['stationary']
-    policy = res['policy']
-
-    trajectories = get_all_trajectories(pomdp, policy)
+    trajectories = res['trajectories']
     print(' I obtained %d trajectories' % len(trajectories))
     for tr in trajectories:
         print('- %s' % tr)
-    
-
 
 
     r = Report()
@@ -87,23 +83,15 @@ def report_aliasing(res, pomdp):
         is_goal = mdp.is_goal(s)
         states_list.append([p_stationary, is_goal])
 
-    cols = ['p_stat', 'is_goal']
-#
-#     r.table('states', data=states_list, rows=rows, cols=cols,
-#                       caption='table of states')
 
-
-    print('Now I want to see the decisions')
-    decisions = set(get_decisions(trajectories))
-    
+    decisions = res['decisions']
     with r.subsection('decisions1') as sub:
         add_table_decisions(sub, decisions)
 
-    decisions2 = disambiguate(decisions)
+    decisions2 = res['decisions_dis']
 
-
-    with r.subsection('decisions2') as sub:
-        add_table_decisions(sub, decisions2)
+    with r.subsection('decisions_dis') as sub:
+        add_table_decisions_only_states(sub, decisions2)
 
     return r
 
@@ -114,9 +102,31 @@ def add_table_decisions(r, decisions):
         history = d['history']
         state = d['state']
         data.append([str(action), str(state), str(history[::-1])])
+
+
     r.table('decisions', data=data, rows=[''] * len(data),
             cols=['action', 'y', 'history'])
 
+def add_table_decisions_only_states(r, decisions):
+    states = set()
+    for d  in decisions:
+        states.update(d['state'])
+
+    cols = sorted(states)
+    data = []
+    for d in decisions:
+
+        action = d['action']
+
+        rw = [action]
+        for c in cols:
+            rw.append(d['state'][c])
+
+        data.append(rw)
+
+
+    r.table('decisions', data=data, rows=[''] * len(data),
+            cols=['action'] + cols)
 
 
 def pretty_info_state(istate):

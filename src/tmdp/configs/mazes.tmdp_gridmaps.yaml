@@ -38,6 +38,13 @@
   - {}
 
 
+- id: imap6
+  desc: "3 rooms, 6 intruders"
+  code:
+  - gridmaps.map_intruder_6
+  - {}
+
+
 - id: imap5
   desc: intruder map 5 
   code:

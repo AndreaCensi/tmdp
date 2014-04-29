@@ -100,6 +100,28 @@ def map_intruder_5():
     ]
     return GridMap(blocks=blocks)
     
+def map_intruder_6():
+    """ This has 3 distinct rooms, 2 intruders each. """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, I, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, I, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, W, W, W, W, W, E, E, E, W, E, W],
+        [W, E, W, I, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, E, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, I, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+
 def map_tmaze():
     blocks = [
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],

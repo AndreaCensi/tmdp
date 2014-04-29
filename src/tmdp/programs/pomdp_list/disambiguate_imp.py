@@ -17,17 +17,19 @@ def disambiguate(decisions):
         d0 = find_shortest_ambiguous(decisions)
         if d0 is None:
             print('Done! no ambiguous states.')
-            return decisions
+            return extra_states, decisions
+
         print('shortest: %s' % d0)
         print('its siblings:')
         amb = get_ambiguous_states(decisions, d0)
         for x in amb:
             print x
-#         amb.add(d0)
 
         # ok, now find the second longest
+        amb.add(d0)
         amb_sorted = sorted(amb, key=lambda x: len(x['history']))
-        d1 = amb_sorted[0]
+        d0 = amb_sorted[0]
+        d1 = amb_sorted[1]
 
         # should have the same state
         assert d0['state'] == d1['state']
@@ -36,10 +38,11 @@ def disambiguate(decisions):
         # ... and be a subset
         h0 = d0['history']
         h1 = d1['history']
+        # this is true in imap4 but not imap6
         assert is_prefix(h0, h1)
 
         trigger = h1[:len(h0) + 1]
-        state_name = 's%d' % len(extra_states)
+        state_name = 's' + ['A', 'B', 'C', 'D', 'E', 'F', 'G'][len(extra_states)]
         extra_states.append(dict(name=state_name, trigger=trigger))
 
         print('adding triggering condition:')
@@ -47,6 +50,8 @@ def disambiguate(decisions):
 
         decisions = add_state(decisions, name=state_name, trigger=trigger)
         
+    assert False
+
 def add_state(decisions, name, trigger):
     res = set()
     for d in deepcopy(decisions):
@@ -54,7 +59,7 @@ def add_state(decisions, name, trigger):
         if is_prefix(trigger, history):
             value = 1
             if history == trigger:
-                d['action'] = (d['action'], 'set-%s-%s' % (name, 1))
+                d['action'] = (d['action'], '%s=%s)' % (name, 1))
         else:
             value = 0
         assert not name in d['state']

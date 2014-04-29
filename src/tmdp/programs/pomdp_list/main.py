@@ -33,7 +33,7 @@ class POMDPList(TMDP.get_sub(), QuickApp):
 
             res = cc.comp(pomdp_list_states, pomdp)
             """ Returns res['builder'] as a MDPBuilder """
-            res = cc.comp(find_minimal_policy, res)
+            res = cc.comp(find_minimal_policy, res, pomdp)
 
             cc.add_report(cc.comp(report_sampled_mdp, res, pomdp), 'sampled_mdp')
             cc.add_report(cc.comp(report_aliasing, res, pomdp), 'report_aliasing')

@@ -1,11 +1,18 @@
 from tmdp.mdp_utils import all_actions, mdp_stationary_dist
 from tmdp.meat.value_it.vit_solver import VITMDPSolver
-from tmdp.programs.pomdp_list.mdp_builder import MDPBuilder
+
+from .disambiguate_imp import disambiguate
+from .mdp_builder import MDPBuilder
+from .report_aliasing_imp import get_all_trajectories, \
+    get_decisions
 
 
-__all__ = ['find_minimal_policy', 'pomdp_list_states']
+__all__ = [
+           'find_minimal_policy',
+           'pomdp_list_states',
+]
 
-def find_minimal_policy(res):
+def find_minimal_policy(res, pomdp):
     """ 
         Assumes res['builder'] is a MDPBuilder
     
@@ -18,32 +25,74 @@ def find_minimal_policy(res):
         res['mdp_non_absorbing']
         res['mdp_absorbing'] 
 
+        res['trajectories'] 
      """
 
     builder = res['builder']
+    print('Creating mdp_absoribing...')
     mdp_absorbing = builder.get_sampled_mdp(goal_absorbing=True)
-    solver = VITMDPSolver(least_committed=False)
 
+    print('Solving the resulting MDP...')
+    solver = VITMDPSolver(least_committed=False)
     res2 = solver.solve(mdp_absorbing)
     policy = res2['policy']
 
     # Create a nonabsorbing MDP by resetting after getting to the goal.
+    print('Creating MDP variation with nonabsorbing states...')
     mdp_non_absorbing = builder.get_sampled_mdp(goal_absorbing=False, stay=0.1)
 
     # Get the stationary distribution of this MDP
+    print('Getting the stationary distribution of this MDP...')
     dist0 = mdp_stationary_dist(mdp_non_absorbing,
                                 mdp_non_absorbing.get_start_dist(), policy,
                                 l1_threshold=1e-8)
 
     # these are the states that have nonnegligible probability
-    nonneg = [s  for s in dist0 if dist0[s] >= 1e-4]
+    nonneg = [s for s in dist0 if dist0[s] >= 1e-4]
 
     res2['mdp_non_absorbing'] = mdp_non_absorbing
     res2['mdp_absorbing'] = mdp_absorbing
     res2['stationary'] = dist0
     res2['nonneg'] = nonneg
     res2['policy'] = policy
+    res2['policy:desc'] = """
+        Optimal policy: hash belief state -> distribution over actions
+    """
 
+    print('Find all trajectories for the POMDP...')
+    res2['trajectories'] = get_all_trajectories(pomdp, policy)
+    res2['trajectories:desc'] = """
+        These are all possible trajectories in this POMDP. 
+        A trajectory is a sequence of tuples (observations, action).
+    """
+    print('Now I want to see the decisions that we need to do in the trajectories.')
+    res2['decisions'] = set(get_decisions(res2['trajectories']))
+    res2['decisions:desc'] = """
+        The decisions that we had to do in the trajectories.
+        This is a list of dictionaries.
+        Each dict has fields
+        "action":
+        "state": dict(last=y) 
+        "history": list of tuples (observation, action) leading here.
+    """
+
+    print('Disambiguating states...')
+    
+    extra_states, decisions_dis = disambiguate(res2['decisions'])
+    res2['extra_states'] = extra_states
+    res2['extra_states:desc'] = """
+        This is a list of dictionary with fields:
+            "name":
+            "trigger": sequence of observations that should trigger the state
+    """
+    res2['decisions_dis'] = decisions_dis
+    res2['decisions_dis:desc'] = """
+     Updated decisions. 
+     Now there are potentially new states.
+     And there are new actions of the form "state=1)".
+    """
+
+    print('...done.')
     return res2
 
 
