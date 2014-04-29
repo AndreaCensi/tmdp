@@ -38,6 +38,12 @@
   - {}
 
 
+- id: imap5
+  desc: intruder map 5 
+  code:
+  - gridmaps.map_intruder_5
+  - {}
+
 - id: imap6
   desc: "3 rooms, 6 intruders"
   code:
@@ -45,8 +51,15 @@
   - {}
 
 
-- id: imap5
-  desc: intruder map 5 
+- id: imap7
+  desc: "3 rooms, >>6 intruders"
   code:
-  - gridmaps.map_intruder_5
+  - gridmaps.map_intruder_7
+  - {}
+
+
+- id: imap8
+  desc: "3 rooms, >>6 intruders, start in its room"
+  code:
+  - gridmaps.map_intruder_8
   - {}

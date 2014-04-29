@@ -1,7 +1,7 @@
 from contracts import contract
 
 from gridmaps.map import GridMap
-from gridworld.drawing import display_neigh_field_value, display_state_dist_only
+from gridworld.drawing import display_neigh_field_value
 from tmdp import SimpleMDP
 from tmdp.configuration import get_conftools_tmdp_gridmaps
 from tmdp.mdp_utils.prob_utils import _uniform_dist

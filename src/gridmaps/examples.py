@@ -62,7 +62,6 @@ def map_intruder_2():
     return GridMap(blocks=blocks)
 
 
-
 def map_intruder_4():
     blocks = [
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
@@ -117,6 +116,49 @@ def map_intruder_6():
         [W, E, W, I, E, E, E, W, W, W, W, W, E, W],
         [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
         [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_intruder_7():
+    """ This has 3 distinct rooms, full of intruders each. """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, I, I, I, W, I, I, I, W, E, W],
+        [W, E, W, I, E, E, I, W, I, E, E, E, E, W],
+        [W, E, E, E, E, E, I, W, I, E, I, W, E, W],
+        [W, E, W, I, E, E, I, W, I, E, I, W, E, W],
+        [W, E, W, I, I, I, I, W, I, E, I, W, E, W],
+        [W, E, W, W, W, W, W, W, I, E, I, W, E, W],
+        [W, E, W, I, I, I, I, W, I, I, I, W, E, W],
+        [W, E, W, I, E, E, I, W, W, W, W, W, E, W],
+        [W, E, E, E, E, E, I, W, W, W, W, W, E, W],
+        [W, E, W, I, E, E, I, W, W, W, W, W, E, W],
+        [W, E, W, I, I, I, I, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+def map_intruder_8():
+    """ This has 3 distinct rooms, full of intruders each, start in 4th room. """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, I, I, I, W, I, I, I, W, E, W],
+        [W, E, W, I, E, E, I, W, I, E, E, E, E, W],
+        [W, E, E, E, E, E, I, W, I, E, I, W, E, W],
+        [W, E, W, I, E, E, I, W, I, E, I, W, E, W],
+        [W, E, W, I, I, I, I, W, I, E, I, W, E, W],
+        [W, E, W, W, W, W, W, W, I, E, I, W, E, W],
+        [W, E, W, I, I, I, I, W, I, I, I, W, E, W],
+        [W, E, W, I, E, E, I, W, W, W, W, W, E, W],
+        [W, E, E, E, E, E, I, W, S, E, E, W, E, W],
+        [W, E, W, I, E, E, I, W, E, E, E, W, E, W],
+        [W, E, W, I, I, I, I, W, E, E, E, W, E, W],
+        [W, E, W, W, W, W, W, W, W, E, W, W, E, W],
+        [W, E, E, E, E, E, E, E, E, E, E, E, E, W],
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
     ]
     return GridMap(blocks=blocks)

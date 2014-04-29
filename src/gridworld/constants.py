@@ -12,3 +12,5 @@ class GridWorldsConstants:
        'ru': (-1, +1),
        'lu': (+1, +1),
     }
+
+

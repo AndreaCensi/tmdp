@@ -77,7 +77,10 @@ class IntruderPOMDP(SimplePOMDP):
         robot, intruder = state  # @UnusedVariable
         actions = []
         for action, motion in GridWorldsConstants.action_to_displ.items():
-            actions.append(action)
+
+            length = np.hypot(motion[0], motion[1])
+            if length <= 1:
+                actions.append(action)
 #             s2 = self._grid.next_cell(robot, motion)
 #             if self._grid.is_empty(s2):
 #                 actions.append(action)
@@ -223,6 +226,7 @@ class IntruderPOMDP(SimplePOMDP):
             p += p_state * self.likelihood(state=state, observations=observations)
         return p
 
+
 def _trace_path(a, b):
     a = np.array(a) * 1.0
     b = np.array(b) * 1.0
@@ -235,8 +239,6 @@ def _trace_path(a, b):
         if not ps or ps[-1] != p:
             ps.append(p)
     return list(ps)
-
-
 
 
 def _get_marginals(state_dist):
