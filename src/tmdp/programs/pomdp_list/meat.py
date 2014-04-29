@@ -37,23 +37,34 @@ def find_minimal_policy(res, pomdp):
     res2 = solver.solve(mdp_absorbing)
     policy = res2['policy']
 
+    res2['mdp_absorbing'] = mdp_absorbing
+    res2['mdp_absorbing:desc'] = """
+        
+    """
+
     # Create a nonabsorbing MDP by resetting after getting to the goal.
     print('Creating MDP variation with nonabsorbing states...')
     mdp_non_absorbing = builder.get_sampled_mdp(goal_absorbing=False, stay=0.1)
+    res2['mdp_non_absorbing'] = mdp_non_absorbing
 
     # Get the stationary distribution of this MDP
     print('Getting the stationary distribution of this MDP...')
     dist0 = mdp_stationary_dist(mdp_non_absorbing,
                                 mdp_non_absorbing.get_start_dist(), policy,
                                 l1_threshold=1e-8)
+    res2['stationary'] = dist0
+    res2['stationary:desc'] = """
+        Stationary distribution over belief states
+    """
 
     # these are the states that have nonnegligible probability
     nonneg = [s for s in dist0 if dist0[s] >= 1e-4]
-
-    res2['mdp_non_absorbing'] = mdp_non_absorbing
-    res2['mdp_absorbing'] = mdp_absorbing
-    res2['stationary'] = dist0
     res2['nonneg'] = nonneg
+    res2['nonneg:desc'] = """
+        Belief states with nonnegligible probability.
+    """
+
+
     res2['policy'] = policy
     res2['policy:desc'] = """
         Optimal policy: hash belief state -> distribution over actions
