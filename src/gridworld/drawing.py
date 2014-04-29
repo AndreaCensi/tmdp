@@ -20,20 +20,20 @@ def _display_map(grid, goal, pylab, fill_empty=True):
 
     gg = GridGeometry(gridmap)
 
-    obstacle_fill = '#808080'
+    _display_obstacles(pylab, gg)
+
     for (i, j) in product(range(H), range(W)):
         if gg.is_empty((i, j)):
-
             if fill_empty:
                 fc = 'white'
             else:
                 continue
 
             attrs = dict(fc=fc, ec='black')
+            a.add_patch(Rectangle((i, j), 1, 1, **attrs))
         else:
-            attrs = dict(fc=obstacle_fill, ec='white')
-
-        a.add_patch(Rectangle((i, j), 1, 1, **attrs))
+            # attrs = dict(fc=obstacle_fill, ec='white')
+            continue
 
     yield pylab
 
@@ -50,11 +50,9 @@ def _display_obstacles(pylab, gg, obstacle_fill='#808080'):
     for (i, j) in product(range(H), range(W)):
         if gg.is_empty((i, j)):
             continue
-        attrs = dict(fc=obstacle_fill, ec='white')
+        attrs = dict(fc=obstacle_fill, ec='none')
         a.add_patch(Rectangle((i, j), 1, 1, **attrs))
 
-
-  
     
 
 def _display_cell(pylab, state, **attrs):
@@ -114,15 +112,23 @@ def display_state_values(grid, goal, pylab, state_values):
 
 
 @contract(grid=GridGeometry)
-def display_state_dist(grid, goal, pylab, state_dist):
+def display_state_dist(grid, goal, pylab, state_dist, **kwargs):
     with _display_map(grid, goal, pylab):
-        max_p = max(state_dist.values())
-        for (i, j), p  in state_dist.items():
-            c1 = np.array([0.8, 0.8, 0.8])
-            c2 = np.array([0.0, 1.0, 0.0])
+        display_state_dist_only(pylab, state_dist, **kwargs)
+        
+def display_state_dist_only(pylab, state_dist, c1=[.8, .8, .8], c2=[0, 1, 0], ec='green'):
+    c1 = np.array(c1)
+    c2 = np.array(c2)
+    max_p = max(state_dist.values())
+    min_p = min(state_dist.values())
+    for (i, j), p  in state_dist.items():
+        if max_p == min_p:  # when all the probs are the same
+            p = p
+        else:
             p = p / max_p
-            color = c1 * (1 - p) + c2 * p
-            _display_cell(pylab, (i, j), fc=color, ec='red')
+        color = c1 * (1 - p) + c2 * p
+        _display_cell(pylab, (i, j), fc=color, ec=ec)
+    
 
 @contract(grid=GridGeometry)
 def display_neigh_field_value(grid, pylab, neig_values, marker_radius=0.2):

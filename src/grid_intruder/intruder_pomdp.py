@@ -11,9 +11,13 @@ import numpy as np
 from reprep.utils.frozen import frozendict2
 from tmdp.configuration import get_conftools_tmdp_gridmaps
 from tmdp.mdp import SimplePOMDP
+from _collections import defaultdict
+from gridworld.drawing import display_state_dist_only
 
 
-__all__ = ['IntruderPOMDP']
+__all__ = [
+           'IntruderPOMDP',
+]
 
 
 class IntruderPOMDP(SimplePOMDP):
@@ -144,7 +148,13 @@ class IntruderPOMDP(SimplePOMDP):
         return not bool(occluded)
 
     def display_state_dist(self, pylab, state_dist):
-        pass
+        from gridworld.grid2 import GridWorld2
+
+        dist_robot, dist_intruder = _get_marginals(state_dist)
+        gw = GridWorld2(gridmap=self.gridmap)
+        gw.display_state_dist(pylab, dist_robot)
+
+        display_state_dist_only(pylab, dist_intruder, c1=[.8, .8, .8], c2=[0, 0, 1], ec='blue')
 
     def display_state_values(self, pylab, state_values):
         pass
@@ -229,3 +239,12 @@ def _trace_path(a, b):
 
 
 
+def _get_marginals(state_dist):
+    dist_robot = defaultdict(lambda:0)
+    dist_intruder = defaultdict(lambda:0)
+
+    for (r, i), p in state_dist.items():
+        dist_robot[r] += p
+        dist_intruder[i] += p
+
+    return frozendict2(dist_robot), frozendict2(dist_intruder)

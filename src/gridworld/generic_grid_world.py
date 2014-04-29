@@ -1,13 +1,14 @@
 from contracts import contract
 
-from gridworld.drawing import display_neigh_field_value
+from gridmaps.map import GridMap
+from gridworld.drawing import display_neigh_field_value, display_state_dist_only
 from tmdp import SimpleMDP
+from tmdp.configuration import get_conftools_tmdp_gridmaps
+from tmdp.mdp_utils.prob_utils import _uniform_dist
 
 from .constants import GridWorldsConstants
 from .grid_world import GridGeometry
-from tmdp.configuration import get_conftools_tmdp_gridmaps
-from gridmaps.map import GridMap
-from tmdp.mdp_utils.prob_utils import _uniform_dist
+
 
 __all__ = ['GenericGridWorld']
 
@@ -62,10 +63,13 @@ class GenericGridWorld(SimpleMDP):
         display_state_values(grid=self._grid, goal=self.get_goal(),
                              pylab=pylab, state_values=state_values)
 
-    def display_state_dist(self, pylab, state_dist):
+    def display_state_dist(self, pylab, state_dist, **kwargs):
+        """ kwargs[c1,c2] = [r,g,b] """
         from gridworld.drawing import display_state_dist
         display_state_dist(grid=self._grid, goal=self.get_goal(),
-                           pylab=pylab, state_dist=state_dist)
+                           pylab=pylab, state_dist=state_dist, **kwargs)
+
+
 
     def display_neigh_field_value(self, pylab, neig_values):
         display_neigh_field_value(self._grid, pylab, neig_values)

@@ -1,15 +1,14 @@
 from contracts import contract
 
-from gridmaps.map import GridMap
 from gridworld.constants import GridWorldsConstants
 from gridworld.generic_grid_world import GenericGridWorld
-from gridworld.grid_world import GridGeometry
 import numpy as np
-from tmdp.configuration import get_conftools_tmdp_gridmaps
-from tmdp.mdp_utils.prob_utils import _uniform_dist
 
 
-__all__ = ['GridWorld2']
+__all__ = [
+    'GridWorld2',
+]
+
 
 class GridWorld2(GenericGridWorld):
     """ 

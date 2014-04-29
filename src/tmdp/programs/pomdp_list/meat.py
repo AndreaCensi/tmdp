@@ -1,10 +1,9 @@
+from reprep.utils.frozen import frozendict2
 from tmdp.mdp_utils import all_actions, mdp_stationary_dist
 from tmdp.meat.value_it.vit_solver import VITMDPSolver
 
 from .disambiguate_imp import disambiguate
 from .mdp_builder import MDPBuilder
-from .report_aliasing_imp import get_all_trajectories, \
-    get_decisions
 
 
 __all__ = [
@@ -20,7 +19,7 @@ def find_minimal_policy(res, pomdp):
         
         res['policy'] = optimal policy
         res2['stationary']
-        res['nonneg'] = states that will be seen under the optimal policy
+        res['nonneg'] = states tha1t will be seen under the optimal policy
         
         res['mdp_non_absorbing']
         res['mdp_absorbing'] 
@@ -181,3 +180,57 @@ def pomdp_list_states(pomdp, use_fraction=True):
 #                 print('last opened: %s' % belief)
 
     return res
+
+
+
+
+def get_all_trajectories(pomdp, policy):
+    # Get all possible trajectories in an absorbing POMDP.
+    # This is done recursively
+
+    trajectories = []
+    # For all possible initial belief
+    start_dist = pomdp.get_start_dist_dist()
+    for belief0, _ in start_dist.items():
+        traj = get_all_trajectories_rec(pomdp=pomdp, policy=policy, belief=belief0)
+        trajectories.extend(traj)
+    return trajectories
+
+
+# @contract(returns='list(list(tuple(*,*)))')
+def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
+    if pomdp.is_goal_belief(belief):
+        return [[]]
+
+    belief = frozendict2(belief)
+    actions = policy[belief].keys()
+
+    trajectories = []
+
+    for action in actions:
+        assert belief in policy
+
+        # evolve the belief given action
+        belief1 = pomdp.evolve(belief, action, use_fraction=use_fraction)
+        belief1 = frozendict2(belief1)
+        # what's the dist of observation given the resulting belief
+        ydist = pomdp.get_observations_dist_given_belief(belief1, use_fraction=use_fraction)
+
+        for y, _ in ydist.items():
+            belief2 = pomdp.inference(belief=belief1, observations=y, use_fraction=use_fraction)
+            rest = get_all_trajectories_rec(pomdp, policy, belief2, use_fraction=use_fraction)
+            for t1 in rest:
+                traj = [dict(action=action, obs=y, belief=belief, belief1=belief1, ydist=ydist, belief2=belief2)] + t1
+                trajectories.append(traj)
+
+    return trajectories
+
+def get_decisions(trajectories):
+    """ Returns list of dicts with fields action, state=dict(last=y) and history """
+    for tr in trajectories:
+        for i in range(len(tr)):
+            action = tr[i]['action']
+            obs = tr[i]['obs']
+            history = tuple([yh['obs'] for yh in tr[:i]])
+            yield frozendict2(action=action, state=frozendict2(last=obs), history=history)
+

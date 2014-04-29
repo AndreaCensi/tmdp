@@ -7,6 +7,7 @@ from tmdp.programs.show import instance_mdp
 
 from .meat import pomdp_list_states, find_minimal_policy
 from .report_aliasing_imp import report_aliasing
+from .report_pictures_imp import report_pictures
 from .reports import report_sampled_mdp
 
 
@@ -37,3 +38,5 @@ class POMDPList(TMDP.get_sub(), QuickApp):
 
             cc.add_report(cc.comp(report_sampled_mdp, res, pomdp), 'sampled_mdp')
             cc.add_report(cc.comp(report_aliasing, res, pomdp), 'report_aliasing')
+
+            cc.add_report(cc.comp(report_pictures, res, pomdp), 'report_pictures')
