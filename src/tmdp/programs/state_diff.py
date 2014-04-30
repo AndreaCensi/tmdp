@@ -54,10 +54,13 @@ class StateDiff(TMDP.get_sub(), QuickApp):
                 for c3, num_points in iterate_context_names(cc, points):
                     c3.add_extra_report_keys(num_points=num_points)
 
-                    res = c3.comp(resample, mdp, solve_result, num_points=num_points)
+                    res = c3.comp(resample, mdp, solve_result,
+                                  num_points=num_points)
 
-                    c3.add_report(c3.comp(report_resample, mdp, res), 'report_resample')
-                    c3.add_report(c3.comp(report_tension, mdp, res), 'report_tension')
+                    c3.add_report(c3.comp(report_resample, mdp, res),
+                                  'report_resample')
+                    c3.add_report(c3.comp(report_tension, mdp, res),
+                                  'report_tension')
 
 
 
@@ -86,7 +89,8 @@ def resample(mdp, solve_result, num_points):
         return d
 
     
-    sampled_points = rejection_sampling(support=support, weight=weight, N=num_points)
+    sampled_points = rejection_sampling(support=support,
+                                        weight=weight, N=num_points)
     
 
     points = support_points + sampled_points
@@ -121,7 +125,7 @@ def rejection_sampling(support, weight, N):
         yield p
         n += 1
 
-def report_resample(mdp, resample_res):
+def report_resample(mdp, resample_res):  # @UnusedVariable
     support_points = resample_res['support_points']
     sampled_points = resample_res['sampled_points']
     delaunay_tri = resample_res['delaunay_tri']
@@ -176,7 +180,8 @@ def report_tension(mdp, resample_res, resolution=0.33):
         turn_all_axes_off(pylab)
 
     with f.plot('density') as pylab:
-        display_sf_field_cont(mdp.get_grid(), pylab, density_sf, res=density_sf)
+        display_sf_field_cont(mdp.get_grid(), pylab,
+                              density_sf, res=density_sf)
         turn_all_axes_off(pylab)
     return r
 
@@ -222,6 +227,7 @@ class ExpKernel():
         self.alpha = alpha
     def __call__(self, p1, p2):
         return np.exp(-self.alpha * np.linalg.norm(p1 - p2))
+
 
 @contract(returns=SampledFunction)
 def sf_from_tension(neig_values, alpha):

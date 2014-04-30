@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 from procgraph_mplayer.quick_animation import pg_quick_animation
 from reprep import Report
 from reprep.plot_utils import turn_all_axes_off
@@ -11,14 +12,19 @@ def jobs_videos(context, res, pomdp):
     for i, tr in enumerate(trajectories):
         beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
         ns = len(beliefs)
-        out = os.path.join(context.get_output_dir(), 'tr-%dsteps-%03d.mp4' % (ns, i))
+        out = os.path.join(context.get_output_dir(),
+                           'tr-%03dsteps-%03d.mp4' % (ns, i))
         context.comp(video_trajectory, beliefs, pomdp, out,
                      job_id='video%03d' % i)
 
-def video_trajectory(beliefs, pomdp, out, video_params=dict(width=640, height=640, fps=2)):
-    nframes = len(beliefs)
+
+def video_trajectory(beliefs, pomdp, out,
+                     video_params=dict(width=640, height=640, fps=15),
+                     upsample=3):
+    nframes = len(beliefs) * upsample
+
     def plotfunc(pylab, frame):
-        # print('frame %d' % frame)
+        frame = int(np.floor(frame / upsample))
         if frame >= len(beliefs):
             frame = len(beliefs) - 1
 
@@ -36,16 +42,14 @@ def report_pictures(res, pomdp):
 
     print(' I obtained %d trajectories' % len(trajectories))
 
-
     for i, tr in enumerate(trajectories):
         with r.subsection('tr%d' % i) as sub:
             report_pictures_trajectory(sub, res, pomdp, tr)
 
-
     return r
 
 
-def report_pictures_trajectory(r, res, pomdp, tr):
+def report_pictures_trajectory(r, res, pomdp, tr):  # @UnusedVariable
 #
 #     beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
 #     nframes = len(beliefs)

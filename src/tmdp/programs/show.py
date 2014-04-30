@@ -58,7 +58,7 @@ def report_actions(mdp):
 
     start = mdp.get_start_dist()
 
-    for i, a in enumerate(actions):
+    for a in actions:
         f = r.figure()
         P = start
         for _ in range(4):

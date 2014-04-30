@@ -7,12 +7,11 @@ from tmdp.programs.show import instance_mdp
 
 from .meat import pomdp_list_states, find_minimal_policy
 from .report_aliasing_imp import report_aliasing
-from .report_pictures_imp import report_pictures
-from .reports import report_sampled_mdp
-from tmdp.programs.pomdp_list.report_pictures_imp import jobs_videos
+from .report_pictures_imp import jobs_videos
 
 
 __all__ = ['POMDPList']
+
 
 class POMDPList(TMDP.get_sub(), QuickApp):
     """ Lists all reachable states of the POMDP. """
@@ -38,13 +37,16 @@ class POMDPList(TMDP.get_sub(), QuickApp):
             res = cc.comp(find_minimal_policy, res, pomdp)
 
 
-            cc.add_report(cc.comp(report_aliasing, res, pomdp), 'report_aliasing')
+            cc.add_report(cc.comp(report_aliasing, res, pomdp),
+                          'report_aliasing')
 
             # Too long (too many states)
-            # cc.add_report(cc.comp(report_sampled_mdp, res, pomdp), 'sampled_mdp')
+            # cc.add_report(cc.comp(report_sampled_mdp, res, pomdp),
+            # 'sampled_mdp')
 
             # Too long (too many iterations)
-            # cc.add_report(cc.comp(report_pictures, res, pomdp), 'report_pictures')
+            # cc.add_report(cc.comp(report_pictures, res, pomdp),
+            # 'report_pictures')
 
 
             cc.comp_dynamic(jobs_videos, res, pomdp)

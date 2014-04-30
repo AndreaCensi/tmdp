@@ -47,6 +47,7 @@ def jobs_vit_display(context, id_mdp):
     r = context.comp_config(report_mdp_display, mdp)
     context.add_report(r, 'report_mdp_display')
 
+
 def report_mdp_display(mdp):
     r = Report()
 
@@ -62,7 +63,6 @@ def report_mdp_display(mdp):
     N = 10
     plan = [actions[j] for j in np.random.randint(0, len(actions) - 1, N)]
     
-
     f = r.figure()
     for i, a in enumerate(plan):
         with f.plot('p%d' % i) as pylab:
@@ -70,6 +70,7 @@ def report_mdp_display(mdp):
         p = mdp.evolve(p, a)
 
     return r
+
 
 def jobs_vit_solve(context, id_mdp):
     config_smdps = get_conftools_tmdp_smdps()

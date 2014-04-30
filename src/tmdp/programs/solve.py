@@ -47,7 +47,8 @@ class Solve(TMDP.get_sub(), QuickApp):
 
 
 def jobs_solve(context, mdp, id_solver):
-    # We make a job out of these in case it needs to have a bit of preprocessing.
+    # We make a job out of these in case it needs to have a
+    # bit of preprocessing.
 
     solver = context.comp_config(instance_solver, id_solver)
     result = context.comp(solve, mdp, solver)

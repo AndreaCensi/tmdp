@@ -63,3 +63,20 @@
   code:
   - gridmaps.map_intruder_8
   - {}
+
+
+
+- id: imap9
+  desc: "2 rooms,  full of area"
+  code:
+  - gridmaps.map_intruder_9
+  - {}
+
+
+
+
+- id: imap10
+  desc: "3 rooms,  full of area"
+  code:
+  - gridmaps.map_intruder_10
+  - {}

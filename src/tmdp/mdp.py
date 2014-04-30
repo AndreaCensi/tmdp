@@ -33,7 +33,6 @@ class SimpleMDP():
     def is_state_set(self, x):
         for s in x:
             self.is_state(s)
-
         
     @abstractmethod
     def states(self):

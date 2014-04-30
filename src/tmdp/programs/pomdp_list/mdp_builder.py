@@ -25,7 +25,7 @@ class MDPBuilder():
         if state in self._state2id:
             return self._state2id[state]
 #         print('not creating different IDs')
-        l = len(self._state2id)
+#         l = len(self._state2id)
         l = state
         self._state2id[state] = l
         self._id2state[l] = state
@@ -51,7 +51,8 @@ class MDPBuilder():
 
         state2actions = defaultdict(lambda: set())
         state2action2transition = defaultdict(lambda: defaultdict(lambda:{}))
-        state2action2state2reward = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda:{})))
+        state2action2state2reward = \
+            defaultdict(lambda: defaultdict(lambda: defaultdict(lambda:{})))
 
         # create states self.states = set()
         states = set()
@@ -82,7 +83,8 @@ class MDPBuilder():
                     state2action2transition[g][a][g] = stay
                     state2action2state2reward[g][a][g] = 0.0
                     for s0 in self._start_dist:
-                        state2action2transition[g][a][s0] = self._start_dist[s0] * (1.0 - stay)
+                        x = self._start_dist[s0] * (1.0 - stay)
+                        state2action2transition[g][a][s0] = x
                         state2action2state2reward[g][a][s0] = 0.0
 
 

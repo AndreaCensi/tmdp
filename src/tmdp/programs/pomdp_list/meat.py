@@ -7,9 +7,10 @@ from .mdp_builder import MDPBuilder
 
 
 __all__ = [
-           'find_minimal_policy',
-           'pomdp_list_states',
+   'find_minimal_policy',
+   'pomdp_list_states',
 ]
+
 
 def find_minimal_policy(res, pomdp):
     """ 
@@ -43,7 +44,8 @@ def find_minimal_policy(res, pomdp):
 
     # Create a nonabsorbing MDP by resetting after getting to the goal.
     print('Creating MDP variation with nonabsorbing states...')
-    mdp_non_absorbing = builder.get_sampled_mdp(goal_absorbing=False, stay=0.1)
+    mdp_non_absorbing = \
+        builder.get_sampled_mdp(goal_absorbing=False, stay=0.1)
     res2['mdp_non_absorbing'] = mdp_non_absorbing
 
     # Get the stationary distribution of this MDP
@@ -75,7 +77,8 @@ def find_minimal_policy(res, pomdp):
         These are all possible trajectories in this POMDP. 
         A trajectory is a sequence of tuples (observations, action).
     """
-    print('Now I want to see the decisions that we need to do in the trajectories.')
+    print('Now I want to see the decisions that we need '
+          'to do in the trajectories.')
     res2['decisions'] = set(get_decisions(res2['trajectories']))
     res2['decisions:desc'] = """
         The decisions that we had to do in the trajectories.
@@ -127,7 +130,8 @@ def pomdp_list_states(pomdp, use_fraction=True):
     actions = all_actions(pomdp)
     while nodes_open:
         if len(nodes_closed) % 100 == 0:
-            print('nopen: %5d nclosed: %5d ngoal: %5d' % (len(nodes_open), len(nodes_closed), len(nodes_goal)))
+            print('nopen: %5d nclosed: %5d ngoal: %5d'
+                  % (len(nodes_open), len(nodes_closed), len(nodes_goal)))
         belief = nodes_open.pop()
 
         # print('-- popping %s' % belief)
@@ -141,33 +145,29 @@ def pomdp_list_states(pomdp, use_fraction=True):
             nodes_goal.add(belief)
             builder.mark_goal(belief)
 
-#             for action in actions:
-#                 for belief0, p0 in start_dist.items():
-#                     builder.add_transition(belief, action, belief0, p0, 0)
-
-            # any action at the goal states makes it go randomly to the initial states
-#             for action in actions:
-#                 for belief0, p0 in start_dist.items():
-#                     builder.add_transition(belief, action, belief0, p0, 0)
-
-            # print('goal: %s' % belief)
         else:
             # for each action, evolve belief
             for action in actions:
-                belief1 = pomdp.evolve(belief, action, use_fraction=use_fraction)
+                belief1 = pomdp.evolve(belief, action,
+                                       use_fraction=use_fraction)
                 for _, p_x in belief1.items():
                     assert p_x > 0
 
                 # print('-- %s -> %s' % (action, belief1))
                 # now sample observations
-                for y, p_y in pomdp.get_observations_dist_given_belief(belief1, use_fraction=use_fraction).items():
+                ydist = pomdp.get_observations_dist_given_belief(belief1,
+                            use_fraction=use_fraction)
+                for y, p_y in ydist.items():
                     assert p_y > 0
-                        # Now, see what would be the belief for each possible observation
+                    # Now, see what would be the belief for each
+                    # possible observation
                     # p(y | x) * p(x) / p(y)
                     # Likelihood
 
                     # print('y = %s is generated with prob %s ' % (y, p_y))
-                    belief2 = pomdp.inference(belief=belief1, observations=y, use_fraction=use_fraction)
+                    belief2 = pomdp.inference(belief=belief1,
+                                              observations=y,
+                                              use_fraction=use_fraction)
 
                     builder.add_transition(belief, action, belief2, p_y, -1)
 
@@ -175,9 +175,6 @@ def pomdp_list_states(pomdp, use_fraction=True):
                         pass
                     else:
                         nodes_open.append(belief2)
-
-#             if np.random.rand() < 0.01:
-#                 print('last opened: %s' % belief)
 
     return res
 
@@ -192,7 +189,8 @@ def get_all_trajectories(pomdp, policy):
     # For all possible initial belief
     start_dist = pomdp.get_start_dist_dist()
     for belief0, _ in start_dist.items():
-        traj = get_all_trajectories_rec(pomdp=pomdp, policy=policy, belief=belief0)
+        traj = get_all_trajectories_rec(pomdp=pomdp,
+                                        policy=policy, belief=belief0)
         trajectories.extend(traj)
     return trajectories
 
@@ -214,23 +212,31 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
         belief1 = pomdp.evolve(belief, action, use_fraction=use_fraction)
         belief1 = frozendict2(belief1)
         # what's the dist of observation given the resulting belief
-        ydist = pomdp.get_observations_dist_given_belief(belief1, use_fraction=use_fraction)
+        ydist = pomdp.get_observations_dist_given_belief(belief1,
+                    use_fraction=use_fraction)
 
         for y, _ in ydist.items():
-            belief2 = pomdp.inference(belief=belief1, observations=y, use_fraction=use_fraction)
-            rest = get_all_trajectories_rec(pomdp, policy, belief2, use_fraction=use_fraction)
+            belief2 = pomdp.inference(belief=belief1,
+                                      observations=y,
+                                      use_fraction=use_fraction)
+            rest = get_all_trajectories_rec(pomdp, policy, belief2,
+                                            use_fraction=use_fraction)
             for t1 in rest:
-                traj = [dict(action=action, obs=y, belief=belief, belief1=belief1, ydist=ydist, belief2=belief2)] + t1
+                traj = [dict(action=action, obs=y,
+                             belief=belief, belief1=belief1,
+                             ydist=ydist, belief2=belief2)] + t1
                 trajectories.append(traj)
 
     return trajectories
 
 def get_decisions(trajectories):
-    """ Returns list of dicts with fields action, state=dict(last=y) and history """
+    """ Returns list of dicts with fields action, state=dict(last=y) 
+        and history """
     for tr in trajectories:
         for i in range(len(tr)):
             action = tr[i]['action']
             obs = tr[i]['obs']
             history = tuple([yh['obs'] for yh in tr[:i]])
-            yield frozendict2(action=action, state=frozendict2(last=obs), history=history)
+            yield frozendict2(action=action,
+                              state=frozendict2(last=obs), history=history)
 

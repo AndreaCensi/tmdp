@@ -4,6 +4,7 @@ import networkx as nx
 from reprep import Report
 from tmdp.mdp_utils import all_actions
 
+
 __all__ = [
            'report_sampled_mdp',
 ]
@@ -13,7 +14,8 @@ def report_sampled_mdp(res, pomdp):
     nonneg = res['nonneg']
     policy = res['policy']
     G = nx_graph_from_mdp(mdp_absorbing, skip_self=True, only_states=None)
-    Gmin = nx_graph_from_mdp(mdp_absorbing, skip_self=True, only_states=nonneg,
+    Gmin = nx_graph_from_mdp(mdp_absorbing,
+                             skip_self=True, only_states=nonneg,
                              only_policy=policy)
 
 
@@ -21,7 +23,7 @@ def report_sampled_mdp(res, pomdp):
     print('layout...')
 
     def layout(G0):
-        pos0 = nx.spectral_layout(G)
+        pos0 = nx.spectral_layout(G0)
 #         pos = nx.fruchterman_reingold_layout(G, pos=pos0)
         return pos0
 #         return pos0
@@ -73,7 +75,7 @@ def report_sampled_mdp(res, pomdp):
     r = Report()
     f = r.figure(cols=2)
     print('plotting G')
-    with f.plot('G', figsize=(5, 5)) as pylab:
+    with f.plot('G', figsize=(5, 5)) as pylab:  # @UnusedVariable
         nx_draw_with_attrs(G, pos=pos)
 
 
@@ -86,21 +88,21 @@ def report_sampled_mdp(res, pomdp):
 
     size2 = (3, 3)
     print('plotting Gmin')
-    with f.plot('Gmin', figsize=size2) as pylab:
+    with f.plot('Gmin', figsize=size2) as pylab:  # @UnusedVariable
         nx_draw_with_attrs(Gmin, pos=pos, with_labels=False)
 
     print('plotting Gmin again with better coords')
 
 
-    with f.plot('Gmin2', figsize=size2) as pylab:
+    with f.plot('Gmin2', figsize=size2) as pylab:  # @UnusedVariable
         nx_draw_with_attrs(Gmin, pos=pos_spectral, with_labels=False)
 
     print('plotting Gmin again with better coords')
 
-    with f.plot('Gmin3', figsize=size2) as pylab:
+    with f.plot('Gmin3', figsize=size2) as pylab:  # @UnusedVariable
         nx_draw_with_attrs(Gmin, pos=pos_neato, with_labels=False)
 
-    with f.plot('Gmin_dot', figsize=size2) as pylab:
+    with f.plot('Gmin_dot', figsize=size2) as pylab:  # @UnusedVariable
         nx_draw_with_attrs(Gmin, pos=pos_dot, with_labels=False)
 
     return r
@@ -112,7 +114,8 @@ def nx_draw_with_attrs(G, pos, with_labels=False):
 #
 #
 #     for style in set(edge_styles):
-#         edgelist = [(a, b) for (a, b) in G.edges() if G[a][b]['edge_style'] == style]
+#         edgelist = [(a, b) for (a, b) in G.edges()
+# if G[a][b]['edge_style'] == style]
 #         nx.draw_networkx_edges(G, pos=pos,
 #                                style=style,
 #                                arrows=True,
@@ -182,7 +185,7 @@ def nx_draw_with_attrs(G, pos, with_labels=False):
 
 
 def nx_graph_from_mdp(mdp, skip_self=True, only_states=None, only_policy=None,
-                      original_pomdp=None):
+                      original_pomdp=None):  # @UnusedVariable
     """ 
         Creates an NX graph.
     
@@ -273,7 +276,7 @@ def nx_graph_from_mdp(mdp, skip_self=True, only_states=None, only_policy=None,
     return G
 
 
-def add_aliasing_edges(G, only_states, belief_mdp, pomdp):
+def add_aliasing_edges(G, only_states, belief_mdp, pomdp):  # @UnusedVariable
     for s1 in only_states:
         for s2 in only_states:
             if s1 == s2:
@@ -285,7 +288,8 @@ def add_aliasing_edges(G, only_states, belief_mdp, pomdp):
             can_distinguish = len(set(obs1) & set(obs2)) == 0
 
 #             if not len(obs1) == 0 or not len(obs2) == 0:
-#                 print('not deterministic, %s , %s , %s , %s ' % (s1, obs1, s2, obs2))
+#                 print('not deterministic, %s , %s , %s ,
+#  %s ' % (s1, obs1, s2, obs2))
 #                 continue
 
             if not can_distinguish:

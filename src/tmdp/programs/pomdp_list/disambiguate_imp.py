@@ -5,7 +5,8 @@ from copy import deepcopy
 @contract(decisions='set(dict)')
 def disambiguate(decisions):
     """ 
-        decisions = list of dicts with fields action, state=dict(last=y) and history=tuple
+        decisions = list of dicts with fields action, 
+        state=dict(last=y) and history=tuple
     """
     
     # find the shortest ambiguous sequence. ambiguous means 
@@ -42,7 +43,8 @@ def disambiguate(decisions):
         assert is_prefix(h0, h1)
 
         trigger = h1[:len(h0) + 1]
-        state_name = 's' + ['A', 'B', 'C', 'D', 'E', 'F', 'G'][len(extra_states)]
+        k = len(extra_states)
+        state_name = 's' + ['A', 'B', 'C', 'D', 'E', 'F', 'G'][k]
         extra_states.append(dict(name=state_name, trigger=trigger))
 
         print('adding triggering condition:')

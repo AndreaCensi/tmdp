@@ -57,7 +57,8 @@ class SampledMDP(SimpleMDP):
                 # reward for all
                 for s2 in s2s:
                     assert s2 in self.state2action2state2reward[s][a]
-                    reward = self.state2action2state2reward[s][a][s2]
+                    self.state2action2state2reward[s][a][s2]
+                    # reward = self.state2action2state2reward[s][a][s2]
                     # assert number
 
     def is_goal(self, s):
