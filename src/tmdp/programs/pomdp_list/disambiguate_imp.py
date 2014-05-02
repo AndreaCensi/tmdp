@@ -59,12 +59,20 @@ def add_state(decisions, name, trigger):
     for d in deepcopy(decisions):
         history = d['history']
         if is_prefix(trigger, history):
-            value = 1
+
             if history == trigger:
-                d['action'] = (d['action'], '%s=%s)' % (name, 1))
+                d['action'] = (d['action'], '%s=%s' % (name, 1))
+
+            # The action acts after one step
+            if len(history) > len(trigger):
+                value = 1
+            else:
+                value = 0
         else:
             value = 0
         assert not name in d['state']
+
+
         d['state'][name] = value
         res.add(d)
     return res

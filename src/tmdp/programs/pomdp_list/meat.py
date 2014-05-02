@@ -4,6 +4,7 @@ from tmdp.meat.value_it.vit_solver import VITMDPSolver
 
 from .disambiguate_imp import disambiguate
 from .mdp_builder import MDPBuilder
+from tmdp.programs.pomdp_list.agent import create_agent, check_agent
 
 
 __all__ = [
@@ -65,7 +66,6 @@ def find_minimal_policy(res, pomdp):
         Belief states with nonnegligible probability.
     """
 
-
     res2['policy'] = policy
     res2['policy:desc'] = """
         Optimal policy: hash belief state -> distribution over actions
@@ -75,18 +75,22 @@ def find_minimal_policy(res, pomdp):
     res2['trajectories'] = get_all_trajectories(pomdp, policy)
     res2['trajectories:desc'] = """
         These are all possible trajectories in this POMDP. 
-        A trajectory is a sequence of tuples (observations, action).
+        A trajectory is a sequence of dictionaries with fields
+            dict(action=action, obs=y,
+                belief=belief, belief1=belief1,
+                 ydist=ydist, belief2=belief2)
     """
     print('Now I want to see the decisions that we need '
           'to do in the trajectories.')
     res2['decisions'] = set(get_decisions(res2['trajectories']))
+    print('Found %d unique decisions' % len(res2['decisions']))
     res2['decisions:desc'] = """
         The decisions that we had to do in the trajectories.
         This is a list of dictionaries.
         Each dict has fields
         "action":
         "state": dict(last=y) 
-        "history": list of tuples (observation, action) leading here.
+        "history": list of dictionaries (as above)
     """
 
     print('Disambiguating states...')
@@ -105,8 +109,14 @@ def find_minimal_policy(res, pomdp):
      And there are new actions of the form "state=1)".
     """
 
+    res2['agent'] = create_agent(decisions_dis)
+    print('Checking that this agent reconstructs the trajectories exactly'
+          ' and adding "agent_state" to the dict.')
+    check_agent(res2['agent'], res2['trajectories'])
+
     print('...done.')
     return res2
+
 
 
 def pomdp_list_states(pomdp, use_fraction=True):
@@ -118,7 +128,6 @@ def pomdp_list_states(pomdp, use_fraction=True):
 
     builder = MDPBuilder(start_dist=start_dist)
     res['builder'] = builder
-
 
     nodes_open = list()
     nodes_closed = set()
@@ -232,11 +241,14 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
 def get_decisions(trajectories):
     """ Returns list of dicts with fields action, state=dict(last=y) 
         and history """
+    n = 0
     for tr in trajectories:
         for i in range(len(tr)):
             action = tr[i]['action']
             obs = tr[i]['obs']
             history = tuple([yh['obs'] for yh in tr[:i]])
+            n += 1
+            print('%03d: u = %s  y = %s  history %s' % (n, action, obs, len(history)))
             yield frozendict2(action=action,
                               state=frozendict2(last=obs), history=history)
-
+    print('Found %d raw decisions' % (n))

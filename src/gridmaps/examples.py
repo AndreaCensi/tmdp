@@ -25,7 +25,6 @@ def map_intruder_1():
     return GridMap(blocks=blocks)
 
 
-
 def map_intruder_3():
     blocks = [
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
@@ -81,6 +80,44 @@ def map_intruder_4():
     return GridMap(blocks=blocks)
 
 
+def map_intruder_4a():
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, I, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, I, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_intruder_4b():
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, I, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+
 def map_intruder_5():
     blocks = [
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
@@ -105,10 +142,10 @@ def map_intruder_6():
     blocks = [
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
         [W, E, W, I, E, E, E, W, I, E, E, W, E, W],
-        [W, E, W, I, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
         [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
-        [W, E, W, I, E, E, E, W, E, E, E, W, E, W],
         [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, I, E, E, E, W, E, E, E, W, E, W],
         [W, E, W, W, W, W, W, W, E, E, E, W, E, W],
         [W, E, W, I, E, E, E, W, E, E, I, W, E, W],
         [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
@@ -186,6 +223,50 @@ def map_intruder_10():
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
     ]
     return GridMap(blocks=blocks)
+
+def map_intruder_11():
+    """ This has 3 distinct rooms, full environment """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, I, I, W],
+        [W, I, I, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, W, W, W, W, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, W, W, W, W, I, W],
+        [W, I, I, I, I, I, I, W, E, S, E, W, I, W],
+        [W, I, W, I, I, I, I, W, E, E, E, W, I, W],
+        [W, I, W, I, I, I, I, W, E, E, E, W, I, W],
+        [W, I, W, W, W, W, W, W, W, E, W, W, I, W],
+        [W, I, I, I, I, I, I, I, I, E, I, I, I, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_intruder_12():
+    """ This has 2 distinct rooms, full environment """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, I, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, I, I, I, W, I, W],
+        [W, I, W, I, I, I, I, W, W, W, W, W, I, W],
+        [W, I, I, I, I, I, I, W, E, S, E, W, I, W],
+        [W, I, W, I, I, I, I, W, E, E, E, W, I, W],
+        [W, I, W, I, I, I, I, W, E, E, E, W, I, W],
+        [W, I, W, W, W, W, W, W, W, E, W, W, I, W],
+        [W, I, I, I, I, I, I, I, I, E, I, I, I, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
 
 def map_intruder_9():
     """ 2 rooms, full of area """

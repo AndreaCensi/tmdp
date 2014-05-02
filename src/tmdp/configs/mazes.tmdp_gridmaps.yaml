@@ -80,3 +80,10 @@
   code:
   - gridmaps.map_intruder_10
   - {}
+
+- id: "map_intruder_${num}"
+  desc: ""
+  code:
+  - "gridmaps.map_intruder_${num}"
+  - {}
+  

@@ -1,4 +1,7 @@
+from collections import defaultdict
 import os
+
+from matplotlib.font_manager import FontProperties
 
 import numpy as np
 from procgraph_mplayer.quick_animation import pg_quick_animation
@@ -9,19 +12,30 @@ from reprep.plot_utils import turn_all_axes_off
 def jobs_videos(context, res, pomdp):
     trajectories = res['trajectories']
 
+    len2num = defaultdict(lambda:0)
+
     for i, tr in enumerate(trajectories):
         beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
+        agent_states = [tr[0]['agent_state']] + [t['agent_state'] for t in tr]
+
         ns = len(beliefs)
+        # only creates one video per length of trajectory.
+        if len2num[ns] > 0:
+            continue
+
+        len2num[ns] += 1
+
         out = os.path.join(context.get_output_dir(),
                            'tr-%03dsteps-%03d.mp4' % (ns, i))
-        context.comp(video_trajectory, beliefs, pomdp, out,
+        context.comp(video_trajectory, beliefs=beliefs,
+                     agent_states=agent_states, pomdp=pomdp, out=out,
                      job_id='video%03d' % i)
 
 
-def video_trajectory(beliefs, pomdp, out,
+def video_trajectory(beliefs, agent_states, pomdp, out,
                      video_params=dict(width=640, height=640, fps=15),
-                     upsample=3):
-    nframes = len(beliefs) * upsample
+                     upsample=3, final_frames=15):
+    nframes = len(beliefs) * upsample + final_frames
 
     def plotfunc(pylab, frame):
         frame = int(np.floor(frame / upsample))
@@ -30,6 +44,14 @@ def video_trajectory(beliefs, pomdp, out,
 
         belief = beliefs[frame]
         pomdp.display_state_dist(pylab, belief)
+
+        agent_state = agent_states[frame]
+        keys = sorted(agent_state.keys())
+        values = [agent_state[k] for k in keys]
+        state_string = ' '.join(map(str, values))
+        pylab.figtext(0.1, 0.95 , state_string,
+                      fontproperties=FontProperties(size=25))
+
         turn_all_axes_off(pylab)
 
     pg_quick_animation(plotfunc, nframes, out=out, **video_params)
