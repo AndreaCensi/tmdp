@@ -1,5 +1,5 @@
 
-src/tmdp/programs/pomdp_list/report_agent_imp.pyfrom reprep.utils.frozen import frozendict2
+from reprep.utils.frozen import frozendict2
 from reprep import Report
 from contracts import contract
 import numpy as np
@@ -131,12 +131,13 @@ class Agent():
         eff = ((100.0 * len(states) / np.power(2, nbits)))
         r.text('efficiency', '%.2f%% ' % eff)
 
-        data = []
-        for state in states:
-            row = [state[s] for s in self.states_names]
-            data.append(row)
+        if nbits > 0:
+            data = []
+            for state in states:
+                row = [state[s] for s in self.states_names]
+                data.append(row)
 
-        r.table('states', data, cols=list(self.states_names))
+            r.table('states', data, cols=list(self.states_names))
 
 
         
