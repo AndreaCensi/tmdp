@@ -10,4 +10,8 @@ def report_agent(res, pomdp):
     with r.subsection('states') as sub:
         agent.report_states(sub)
 
+    with r.subsection('transitions') as sub:
+        agent.report_transitions(sub)
+
+
     return r

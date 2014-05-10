@@ -10,6 +10,7 @@ from reprep.plot_utils import turn_all_axes_off
 
 
 def jobs_videos(context, res, pomdp):
+    """ Creates dynamic jobs for each trajectory. """
     trajectories = res['trajectories']
 
     len2num = defaultdict(lambda:0)
@@ -25,35 +26,91 @@ def jobs_videos(context, res, pomdp):
 
         len2num[ns] += 1
 
-        out = os.path.join(context.get_output_dir(),
-                           'tr-%03dsteps-%03d.mp4' % (ns, i))
+        trjname = 'tr%03dsteps%03d' % (ns, i)
+
+        out = os.path.join(context.get_output_dir(), trjname + '.mp4')
         context.comp(video_trajectory, beliefs=beliefs,
                      agent_states=agent_states, pomdp=pomdp, out=out,
                      job_id='video%03d' % i)
+
+        c2 = context.child(trjname)
+        c2.add_extra_report_keys(trajectory=trjname)
+        r = c2.comp(report_trajectory, beliefs, agent_states, pomdp)
+        c2.add_report(r, 'trajectory')
+
+
+def report_trajectory(beliefs, agent_states, pomdp):
+    r = Report()
+
+    plotter = TrajPlotter(beliefs=beliefs, pomdp=pomdp, agent_states=agent_states,
+                          upsample=1)
+    plotfunc = plotter.plotfunc
+    
+    f = r.figure(cols=8)
+
+    x0, x1, y0, y1 = plotter.get_data_bounds()
+    width = x1 - x0
+    height = y1 - y0
+    C = 0.4
+    figsize = (C * width, C * height)
+
+    for i in range(len(beliefs)):
+        with f.plot('t%03d' % i, figsize=figsize) as pylab:
+            plotfunc(pylab, i)
+    return r
+
+
+class TrajPlotter():
+    def __init__(self, beliefs, pomdp, agent_states, upsample):
+        self.beliefs = beliefs
+        self.pomdp = pomdp
+        self.agent_states = agent_states
+        self.upsample = upsample
+
+
+    def plotfunc(self, pylab, frame):
+        turn_all_axes_off(pylab)
+
+        frame = int(np.floor(frame / self.upsample))
+        if frame >= len(self.beliefs):
+            frame = len(self.beliefs) - 1
+
+        belief = self.beliefs[frame]
+        self.pomdp.display_state_dist(pylab, belief)
+
+        agent_state = self.agent_states[frame]
+        keys = sorted(agent_state.keys())
+        values = [agent_state[k] for k in keys]
+        state_string = ' '.join(map(str, values))
+
+        if False:
+            pylab.figtext(0.1, 0.95 , state_string,
+                      fontproperties=FontProperties(size=25))
+        else:
+            shape = self.pomdp.get_grid_shape()
+            dx = 0
+            dy = shape[1] + 0.5
+            pylab.text(dx, dy , state_string,
+                       fontproperties=FontProperties(size=25))
+
+            pylab.axis(self.get_data_bounds())
+
+        pylab.tight_layout()
+
+    def get_data_bounds(self):
+        shape = self.pomdp.get_grid_shape()
+        M = 0.33
+        bounds = (-M, shape[0] + M, -M, shape[1] + 1 + M)
+        return bounds
 
 
 def video_trajectory(beliefs, agent_states, pomdp, out,
                      video_params=dict(width=640, height=640, fps=15),
                      upsample=3, final_frames=15):
     nframes = len(beliefs) * upsample + final_frames
-
-    def plotfunc(pylab, frame):
-        frame = int(np.floor(frame / upsample))
-        if frame >= len(beliefs):
-            frame = len(beliefs) - 1
-
-        belief = beliefs[frame]
-        pomdp.display_state_dist(pylab, belief)
-
-        agent_state = agent_states[frame]
-        keys = sorted(agent_state.keys())
-        values = [agent_state[k] for k in keys]
-        state_string = ' '.join(map(str, values))
-        pylab.figtext(0.1, 0.95 , state_string,
-                      fontproperties=FontProperties(size=25))
-
-        turn_all_axes_off(pylab)
-
+    plotter = TrajPlotter(beliefs=beliefs, pomdp=pomdp, agent_states=agent_states,
+                          upsample=upsample)
+    plotfunc = plotter.plotfunc
     pg_quick_animation(plotfunc, nframes, out=out, **video_params)
 
 
@@ -72,21 +129,6 @@ def report_pictures(res, pomdp):
 
 
 def report_pictures_trajectory(r, res, pomdp, tr):  # @UnusedVariable
-#
-#     beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
-#     nframes = len(beliefs)
-#     def plotfunc(pylab, frame):
-#         print('frame %d' % frame)
-#         if frame >= len(beliefs):
-#             frame = len(beliefs) - 1
-#
-#         belief = beliefs[frame]
-#         pomdp.display_state_dist(pylab, belief)
-#         turn_all_axes_off(pylab)
-#
-#     with r.data_file('animation', mime=MIME_MP4) as out:
-#         pg_quick_animation(plotfunc, nframes, out=out, **video_params)
-
 
     f = r.figure()
 
@@ -96,8 +138,4 @@ def report_pictures_trajectory(r, res, pomdp, tr):  # @UnusedVariable
         with f.plot('t%s' % i) as pylab:
             pomdp.display_state_dist(pylab, belief)
             turn_all_axes_off(pylab)
-#
-#         if i > 12: break
-#         with r.subsection('t%s' % i) as sub:
-#             sub.text('belief', str(belief))
-#
+

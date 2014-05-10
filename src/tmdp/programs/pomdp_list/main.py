@@ -26,6 +26,8 @@ class POMDPList(TMDP.get_sub(), QuickApp):
     def define_jobs_context(self, context):
         options = self.get_options()
 
+        context.activate_dynamic_reports()
+
         config_mdps = get_conftools_tmdp_smdps()
         id_mdps = config_mdps.expand_names(options.mdps)
 

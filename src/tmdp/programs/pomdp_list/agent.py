@@ -1,16 +1,8 @@
-
 from reprep.utils.frozen import frozendict2
 from reprep import Report
 from contracts import contract
 import numpy as np
-# def create_agent(res, pomdp):
-#     decisions_dis = res['decisions_dis']
-#     trajectories = res['trajectories']
-#
-#     agent = create_agent(decisions_dis, trajectories)
-#     check_agent(agent, trajectories)
-#     res['agent'] = agent
-#     return res
+from reprep.constants import MIME_PNG, MIME_PDF
 
 
 def create_agent(decisions_dis):
@@ -140,7 +132,92 @@ class Agent():
             r.table('states', data, cols=list(self.states_names))
 
 
+    @contract(r=Report)
+    def report_transitions(self, r):
+        Gd = self.create_transition_graph()
+        G = Gd['G']
+        name2state = Gd['name2state']
+        name2obs = Gd['name2obs']
+        name2obsset = Gd['name2obsset']
+
+        f = r.figure()
+        import networkx as nx
+        # pos = nx.spectral_layout(G)
+        with f.plot('G', figsize=(5, 5)) as pylab:  # @UnusedVariable
+            # nx_draw_with_attrs(G, pos=pos, with_labels=True)
+            nx.draw(G)
+
+        d = nx.to_pydot(G)  # d is a pydot graph object, dot options can be easily set
+        # attributes get converted from networkx,
+        # use set methods to control dot attributes after creation
+
+        f = r.figure()
+
+        f.data('pydot1', d.create_pdf(), mime=MIME_PDF)
+        f.data('pydot2', d.create_png(), mime=MIME_PNG)
+
+        r.text("name2state", str(name2state))
+        r.text("name2obs", str(name2obs))
+        r.text("name2obsset", str(name2obsset))
+
         
+    def create_transition_graph(self):
+        """ Creates an nx graph for the agent's internal transitions. """
+        import networkx as nx
+        G = nx.DiGraph()
+        
+        class Namer():
+            def __init__(self, pattern):
+                self.pattern = pattern
+                self.ob2name = {}
+            def __call__(self, ob):
+                if not ob in  self.ob2name:
+                    self.ob2name[ob] = self.pattern % len(self.ob2name)
+                return self.ob2name[ob]
+
+            def get_name2ob(self):
+                return dict((name, ob) for ob, name in self.ob2name.items())
+
+#         state_namer = Namer('$s_%d$')
+#         obs_namer = Namer('$y_%d$')
+#         obsset_namer = Namer('$Y_%d$')
+#
+        state_namer = Namer('s%d')
+        obs_namer = Namer('y%d')
+        obsset_namer = Namer('Y%d')
+        
+        # each state is a node
+        for state in self.get_all_states():
+            s = state_namer(state)
+            G.add_node(s)
+#             G.node[s]['node_size'] = 20
+#             G.node[s]['node_color'] = [0, 0, 1]
+
+        T = self.transitions  # (state, obs) -> state
+
+        from collections import defaultdict
+        edges = defaultdict(lambda: list())  # (s1,s2) -> obs1, obs2, ...
+
+        for (state1, obs), state2 in T.items():
+            edges[(state1, state2)].append(obs)
+
+        for (state1, state2), obs_list in edges.items():
+            s1 = state_namer(state1)
+            s2 = state_namer(state2)
+
+            obsset = tuple(map(obs_namer, obs_list))
+            obsset_name = obsset_namer(obsset)
+            label = obsset_name
+            print ('%s -> %s with %s' % (s1, s2, label))
+            G.add_edge(s1, s2)
+#             G.edge[s1][s2]['edge_color'] = [0, 0, 0]
+            G.edge[s1][s2]['label'] = label
+
+        return dict(G=G, 
+                    name2state=state_namer.get_name2ob(),
+                    name2obs = obs_namer.get_name2ob(),
+                    name2obsset=obsset_namer.get_name2ob(),)
+
 
     def get_state(self):
         return frozendict2(self.state)

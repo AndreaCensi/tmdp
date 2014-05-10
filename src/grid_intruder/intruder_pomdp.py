@@ -176,6 +176,9 @@ class IntruderPOMDP(SimplePOMDP):
         display_state_dist_only(pylab, dist_intruder,
                                 c1=[.8, .8, .8], c2=[0, 0, 1], ec='blue')
 
+    def get_grid_shape(self):
+        return self._grid.get_map().shape
+
     def display_state_values(self, pylab, state_values):
         pass
 
