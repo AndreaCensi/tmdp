@@ -2,6 +2,7 @@ from contracts import contract
 from copy import deepcopy
 import itertools
 import os
+from collections import defaultdict
 
 
 @contract(decisions='set(dict)')
@@ -17,35 +18,54 @@ def disambiguate(decisions):
     extra_states = []
 
     while True:
-        d0 = find_shortest_ambiguous(decisions)
-        if d0 is None:
+
+
+        """ REturns None or     (state, (d1, d2), (a1, a2)), l """
+        res = find_shortest_ambiguous(decisions)
+
+#         d0 = find_shortest_ambiguous(decisions)
+        if res is None:
             print('Done! no ambiguous states; added %s bits.' % len(extra_states))
             return extra_states, decisions
 
-        # print('shortest: %s' % d0)
-        amb = get_ambiguous_states(decisions, d0)
-
-        assert len(amb) >= 1, decisions
-        # print('its siblings:')
-        # for i, x in enumerate(amb):
-        #    print(' ambiguous %d: %s' % (i, x))
-
-        # Ambiguous set of length >= 2
-        amb.add(d0)
-        assert len(amb) >= 2
-
-        ((d1_, d2_), (a1_, a2_)), prefix_len = choose_decisions_to_disambiguate(amb)
-        print('The best commands to disambiguate (l=%s) are "%s" and "%s".' %
-               ((prefix_len, a1_, a2_)))
-
         if False:
-            # how we did it before
-            amb_sorted = sorted(amb, key=lambda x: len(x['history']))
-            d0 = amb_sorted[0]
-            d1 = amb_sorted[1]
+            (state, (d0, d1), (a0, a1)), prefix_len = res
+
         else:
-            d0 = d1_
-            d1 = d2_
+            d0 = find_shortest_ambiguous_old(decisions)
+            state = d0['state']
+            amb = get_ambiguous_states(decisions, d0)
+            amb.add(d0)
+            assert len(amb) >= 2
+            ((d0, d1), (a0, a1)), prefix_len = choose_decisions_to_disambiguate(amb)
+
+#         # print('shortest: %s' % d0)
+#         amb = get_ambiguous_states(decisions, d0)
+#
+#         assert len(amb) >= 1, decisions
+#         # print('its siblings:')
+#         # for i, x in enumerate(amb):
+#         #    print(' ambiguous %d: %s' % (i, x))
+#
+#         # Ambiguous set of length >= 2
+#         amb.add(d0)
+#         assert len(amb) >= 2
+#
+#         ((d1_, d2_), (a1_, a2_)), prefix_len = choose_decisions_to_disambiguate(amb)
+        print('Chosen ambiguous context %s ' % state)
+        print('The best commands to disambiguate (l=%s) are "%s" and "%s".' %
+               ((prefix_len, a0, a1)))
+        print(' d0 history: %s' % str(d0['history']))
+        print(' d1 history: %s' % str(d1['history']))
+
+#         if False:
+#             # how we did it before
+#             amb_sorted = sorted(amb, key=lambda x: len(x['history']))
+#             d0 = amb_sorted[0]
+#             d1 = amb_sorted[1]
+#         else:
+#             d0 = d1_
+#             d1 = d2_
 
         # should have the same state
         assert d0['state'] == d1['state']
@@ -74,7 +94,7 @@ def disambiguate(decisions):
         extra_states.append(dict(name=state_name, trigger=trigger))
 
         print('adding triggering condition of length %s' % len(trigger))
-#         print('trigger: %s' % str(trigger))
+        print('trigger: %s' % str(trigger))
 
         decisions = add_state(decisions, name=state_name, trigger=trigger)
         
@@ -174,8 +194,40 @@ def get_ambiguous_states(decisions, d):
             amb.add(d2)
     return amb 
     
-
 def find_shortest_ambiguous(decisions):
+    """ REturns None or     (state, (d1, d2), (a1, a2)), l """
+    decisions = list(decisions)
+    state2ambiguousdec = defaultdict(lambda: set())
+
+    for d in decisions:
+        ambs = get_ambiguous_states(decisions, d)
+        if ambs:
+            state2ambiguousdec[d['state']].add(d)
+    
+    if len(state2ambiguousdec) == 0:
+        return None
+
+    choices = [] 
+    for state, amb_decisions in  state2ambiguousdec.items():
+        ((d1_, d2_), (a1_, a2_)), prefix_len = choose_decisions_to_disambiguate(amb_decisions)
+        choice = (state, (d1_, d2_), (a1_, a2_))
+        choices.append((choice, prefix_len))
+
+    (state, (d1, d2), (a1, a2)), l = min(choices, key=lambda x:x[1])
+    # print('Results for commands')
+    # print(choices)
+    return (state, (d1, d2), (a1, a2)), l
+#
+#     length = lambda x: length_ambiguation(decisions, x)
+#     ambiguous_sorted = sorted(ambiguous, key=length)
+#
+#     if ambiguous_sorted:
+#         return ambiguous_sorted[0]
+#     else:
+#         return None
+
+
+def find_shortest_ambiguous_old(decisions):
     decisions = list(decisions)
     ambiguous = set()
     for d in decisions:
