@@ -60,7 +60,7 @@ class POMDPList(TMDP.get_sub(), QuickApp):
 
             # See if we can do the same policy with different
             # observation model
-            horizons = [1, 2, 3, 4]
+            horizons = [0, 1, 2, 3, 4]
             for ch, horizon in iterate_context_names(cc, horizons, key='horizon'):
                 pomdp2 = ch.comp(get_alternative_pomdp, pomdp, horizon)
                 res2 = ch.comp(alternate_observersations_an, res, pomdp, pomdp2)

@@ -4,6 +4,7 @@ from contracts import contract
 import numpy as np
 from reprep.constants import MIME_PNG, MIME_PDF
 import pydot
+import warnings
 
 
 def create_agent(decisions_dis):
@@ -47,26 +48,48 @@ def check_agent_trajectory(agent, tr):
         s['agent_state'] = agent.get_state()
 
 
+def interpret_actions(state, action):
+    """ actions =action or tuple(real_action, 's=1') 
+        returns next_state, real action
+    """
+    warnings.warn('here we are assuming that commands are not tuple')
+    assert isinstance(state, dict)
+#     warnings.warn('here we are assuming that commands are string')
+#     assert isinstance(action, (tuple, str))
+    if isinstance(action, tuple):
+        assert len(action) == 2
+        action0, rep_action = action
+#         print('unpacking %r in action0 = %r, rep_action = %r' % (action, action0, rep_action))
+        assert '=' in rep_action
+        next_state = interpret_actions_one(state, rep_action)
+        return interpret_actions(next_state, action0)
+    else:
+        return state, action
+
+def interpret_actions_one(state, rep_action):
+    assert isinstance(state, dict), state
+    assert isinstance(rep_action, str), rep_action
+    assert '=' in rep_action, 'Invalid rep action %s (state %s)' % (rep_action, state)
+    comp, value = rep_action.split('=')
+    value = int(value)
+    assert comp in state
+
+    next_state = dict(**state)
+    next_state[comp] = value
+    next_state = frozendict2(next_state)
+
+    return next_state
+
 
 class Agent():
 
     def __init__(self, states_names, decisions):
+        """ Note that the commands cannot be tuples. """
         self.states_names = states_names
 
         self.transitions = {}  # (state, obs) -> state
         self.commands = {}  # (state, obs) -> command
 
-        def interpret(state, rep_action):
-            assert '=' in rep_action
-            comp, value = rep_action.split('=')
-            value = int(value)
-            assert comp in state
-
-            next_state = dict(**state)
-            next_state[comp] = value
-            next_state = frozendict2(next_state)
-
-            return next_state
 
         for decision in decisions:
             actions = decision['action']
@@ -76,23 +99,30 @@ class Agent():
             del state['last']
             state = frozendict2(state)
 
-            if isinstance(actions, tuple):
-                assert len(actions) == 2, "Otherwise more complicated"
+            next_state, real_action = interpret_actions(state, actions)
 
-                real_action = actions[0]
-                rep_action = actions[1]
-                next_state = interpret(state, rep_action)
-
-                if next_state == state:
-                    print('Found info action %s, %s, %s -> %s' %
-                          (state, obs, str(actions), next_state))
-                    print('But this transition does not work!')
-                    raise ValueError()
-
-            else:
-                real_action = actions
-                rep_action = None
-                next_state = state
+#             warnings.warn('here we are assuming that commands are string')
+#             assert isinstance(real_action, str)
+            assert isinstance(next_state, dict)
+#             
+#             if isinstance(actions, tuple):
+#                 assert len(actions) == 2, "Otherwise more complicated"
+# 
+#                 real_action = actions[0]
+#                 assert not isinstance(real_action, tuple)
+#                 rep_action = actions[1]
+#                 next_state = interpret(state, rep_action)
+# 
+#                 if next_state == state:
+#                     print('Found info action %s, %s, %s -> %s' %
+#                           (state, obs, str(actions), next_state))
+#                     print('But this transition does not work!')
+#                     raise ValueError()
+# 
+#             else:
+#                 real_action = actions
+#                 rep_action = None
+#                 next_state = state
 
             if state!=next_state:
                 print('Transition %s, %s -> %s' % (state , obs, next_state))
@@ -140,14 +170,15 @@ class Agent():
         name2state = Gd['name2state']
         name2obs = Gd['name2obs']
         name2obsset = Gd['name2obsset']
+        name2cmd = Gd['name2cmd']
         policy = Gd['policy']
 
         f = r.figure()
         import networkx as nx
-        # pos = nx.spectral_layout(G)
-        with f.plot('G', figsize=(5, 5)) as pylab:  # @UnusedVariable
-            # nx_draw_with_attrs(G, pos=pos, with_labels=True)
-            nx.draw(G)
+#         # pos = nx.spectral_layout(G)
+#         with f.plot('G', figsize=(5, 5)) as pylab:  # @UnusedVariable
+#             # nx_draw_with_attrs(G, pos=pos, with_labels=True)
+#             nx.draw(G)
 
         d = nx.to_pydot(G)  # d is a pydot graph object, dot options can be easily set
         # attributes get converted from networkx,
@@ -170,14 +201,12 @@ class Agent():
         r.text("name2state", str(name2state))
         r.text("name2obs", str(name2obs))
         r.text("name2obsset", str(name2obsset))
-
+        r.text("name2cmd", str(name2cmd))
         
     def create_transition_graph(self):
         """ Creates an nx graph for the agent's internal transitions. """
         import networkx as nx
         G = nx.DiGraph()
-        
-
 
 #         state_namer = Namer('$s_%d$')
 #         obs_namer = Namer('$y_%d$')
