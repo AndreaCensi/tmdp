@@ -114,6 +114,8 @@ def find_minimal_policy(res, pomdp):
           ' and adding "agent_state" to the dict.')
     check_agent(res2['agent'], res2['trajectories'])
 
+
+
     print('...done.')
     return res2
 
@@ -248,7 +250,7 @@ def get_decisions(trajectories):
             obs = tr[i]['obs']
             history = tuple([yh['obs'] for yh in tr[:i]])
             n += 1
-            print('%03d: u = %s  y = %s  history %s' % (n, action, obs, len(history)))
+            # print('%03d: u = %s  y = %s  history %s' % (n, action, obs, len(history)))
             yield frozendict2(action=action,
                               state=frozendict2(last=obs), history=history)
-    print('Found %d raw decisions' % (n))
+    # print('Found %d raw decisions' % (n))

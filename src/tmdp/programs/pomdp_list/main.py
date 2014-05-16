@@ -9,6 +9,9 @@ from .meat import pomdp_list_states, find_minimal_policy
 from .report_aliasing_imp import report_aliasing
 from .report_pictures_imp import jobs_videos
 from tmdp.programs.pomdp_list.report_agent_imp import report_agent
+from tmdp.programs.pomdp_list.alternate_observations import alternate_observersations_an
+from grid_intruder.intruder_pomdp import IntruderPOMDP
+from grid_intruder.intruder_pomdp_rf import IntruderPOMDPrf
 
 
 __all__ = ['POMDPList']
@@ -53,5 +56,23 @@ class POMDPList(TMDP.get_sub(), QuickApp):
             # cc.add_report(cc.comp(report_pictures, res, pomdp),
             # 'report_pictures')
 
-
             cc.comp_dynamic(jobs_videos, res, pomdp)
+
+            # See if we can do the same policy with different
+            # observation model
+            horizons = [1, 2, 3, 4]
+            for ch, horizon in iterate_context_names(cc, horizons, key='horizon'):
+                pomdp2 = ch.comp(get_alternative_pomdp, pomdp, horizon)
+                res2 = ch.comp(alternate_observersations_an, res, pomdp, pomdp2)
+                ch.add_report(ch.comp(report_agent, res2, pomdp, job_id='report_agent_z'),
+                              'report_agent_z')
+                ch.comp_dynamic(jobs_videos, res2, pomdp2)
+
+
+def get_alternative_pomdp(pomdp, horizon):
+    if not isinstance(pomdp, IntruderPOMDP):
+        raise ValueError('Works only for IntruderPOMDP.')
+
+    new_pomdp = IntruderPOMDPrf(pomdp.get_gridmap(), horizon=horizon)
+    return new_pomdp
+

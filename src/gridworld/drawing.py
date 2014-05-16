@@ -43,10 +43,16 @@ def _display_map(grid, goal, pylab, fill_empty=True):
     pylab.axis((-1, H + 1, -1, W + 1))
     pylab.axis('equal')
 
+gray = '808080'
+light_brown = '#E0D6A6'
+
 @contract(gg=GridGeometry)
-def _display_obstacles(pylab, gg, obstacle_fill='#808080'):
+def _display_obstacles(pylab, gg, obstacle_fill=light_brown):
     a = pylab.gca()
     H, W = gg.get_map().shape
+#     attrs = dict(fc=obstacle_fill, ec='none')
+    a.add_patch(Rectangle((0, 0), H, W, ec='black', fc='none'))
+
     for (i, j) in product(range(H), range(W)):
         if gg.is_empty((i, j)):
             continue

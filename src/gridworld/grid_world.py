@@ -29,6 +29,9 @@ class GridGeometry():
     def is_empty(self, cell):
         return self._map[cell] == GridWorldsConstants.Empty
 
+    def is_inside(self, cell):
+        return(0 <= cell[0] < self._map.shape[0]) and (0 <= cell[1] < self._map.shape[1])
+
     @contract(cell='tuple(int,int)', motion='tuple(int,int)')
     def next_cell(self, cell, motion):
         i, j = cell

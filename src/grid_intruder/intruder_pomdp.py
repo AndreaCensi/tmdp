@@ -1,4 +1,4 @@
-from _collections import defaultdict
+from collections import defaultdict
 from fractions import Fraction
 import itertools
 
@@ -59,6 +59,9 @@ class IntruderPOMDP(SimplePOMDP):
 
         if wrong:
             raise ValueError()
+
+    def get_gridmap(self):
+        return self.gridmap
 
     def is_state(self, state):
         """ States are two tuples of two-coordinates (agent and intruder). """
@@ -148,11 +151,13 @@ class IntruderPOMDP(SimplePOMDP):
         else:
             return {(robot, IntruderPOMDP.undetected): 1}
 
+    @memoize_instance
     def _can_see(self, robot, intruder):
         trace = _trace_path(robot, intruder)
         obstacles = self.gridmap.get_wall_cells()
         occluded = set(trace) & set(obstacles)
         return not bool(occluded)
+
 
     def display_state_dist(self, pylab, state_dist):
         from gridworld.grid2 import GridWorld2
@@ -164,17 +169,21 @@ class IntruderPOMDP(SimplePOMDP):
         if len(dist_robot) == 1:
             # if there is only one state, display the rays
             robot = list(dist_robot)[0]
-            empty_cells = list(self.gridmap.get_empty_cells())
-            seen = [cell
-                    for cell in empty_cells
-                    if self._can_see(robot, cell)]
-            for cell in seen:
-                p0 = np.array(robot) + np.array([0.5, 0.5])
-                p1 = np.array(cell) + np.array([0.5, 0.5])
-                pylab.plot([p0[0], p1[0]], [p0[1], p1[1]], 'y-')
+            self.display_robot_observations(pylab, robot)
 
         display_state_dist_only(pylab, dist_intruder,
                                 c1=[.8, .8, .8], c2=[0, 0, 1], ec='blue')
+
+    def display_robot_observations(self, pylab, robot):
+        """ There is only one state for the robot so display the observations. """
+        empty_cells = list(self.gridmap.get_empty_cells())
+        seen = [cell
+                for cell in empty_cells
+                if self._can_see(robot, cell)]
+        for cell in seen:
+            p0 = np.array(robot) + np.array([0.5, 0.5])
+            p1 = np.array(cell) + np.array([0.5, 0.5])
+            pylab.plot([p0[0], p1[0]], [p0[1], p1[1]], 'y-')
 
     def get_grid_shape(self):
         return self._grid.get_map().shape

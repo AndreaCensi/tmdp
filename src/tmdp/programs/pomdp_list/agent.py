@@ -3,6 +3,7 @@ from reprep import Report
 from contracts import contract
 import numpy as np
 from reprep.constants import MIME_PNG, MIME_PDF
+import pydot
 
 
 def create_agent(decisions_dis):
@@ -38,9 +39,9 @@ def check_agent_trajectory(agent, tr):
         obtained = agent.get_commands()
 
         if obtained != expected:
-            print('--- failure at step %d' % i)
-            print('expected %r' % expected)
-            print('obtained %r' % obtained)
+            print('--- failure at step %d / %d' % (i + 1, len(tr)))
+            print('expected %r' % str(expected))
+            print('obtained %r' % str(obtained))
             raise ValueError()
 
         s['agent_state'] = agent.get_state()
@@ -139,6 +140,7 @@ class Agent():
         name2state = Gd['name2state']
         name2obs = Gd['name2obs']
         name2obsset = Gd['name2obsset']
+        policy = Gd['policy']
 
         f = r.figure()
         import networkx as nx
@@ -156,6 +158,15 @@ class Agent():
         f.data('pydot1', d.create_pdf(), mime=MIME_PDF)
         f.data('pydot2', d.create_png(), mime=MIME_PNG)
 
+        
+        f = r.figure('policy')
+
+        gpolicy = get_policy_graph(policy)
+        f.data('pydot1', gpolicy.create_pdf(), mime=MIME_PDF)
+        f.data('pydot2', gpolicy.create_png(), mime=MIME_PNG)
+
+
+    
         r.text("name2state", str(name2state))
         r.text("name2obs", str(name2obs))
         r.text("name2obsset", str(name2obsset))
@@ -166,17 +177,7 @@ class Agent():
         import networkx as nx
         G = nx.DiGraph()
         
-        class Namer():
-            def __init__(self, pattern):
-                self.pattern = pattern
-                self.ob2name = {}
-            def __call__(self, ob):
-                if not ob in  self.ob2name:
-                    self.ob2name[ob] = self.pattern % len(self.ob2name)
-                return self.ob2name[ob]
 
-            def get_name2ob(self):
-                return dict((name, ob) for ob, name in self.ob2name.items())
 
 #         state_namer = Namer('$s_%d$')
 #         obs_namer = Namer('$y_%d$')
@@ -185,6 +186,7 @@ class Agent():
         state_namer = Namer('s%d')
         obs_namer = Namer('y%d')
         obsset_namer = Namer('Y%d')
+        cmd_namer = Namer('u%d')
         
         # each state is a node
         for state in self.get_all_states():
@@ -205,7 +207,7 @@ class Agent():
             s1 = state_namer(state1)
             s2 = state_namer(state2)
 
-            obsset = tuple(map(obs_namer, obs_list))
+            obsset = tuple(sorted(map(obs_namer, obs_list)))
             obsset_name = obsset_namer(obsset)
             label = obsset_name
             print ('%s -> %s with %s' % (s1, s2, label))
@@ -213,10 +215,62 @@ class Agent():
 #             G.edge[s1][s2]['edge_color'] = [0, 0, 0]
             G.edge[s1][s2]['label'] = label
 
+
+        
+        # now for the commands
+        #
+        #
+        C = self.commands  # (state, obs) -> command
+        
+        
+        # (state, cmd) => obs1, ..., obs2
+        # Which observations make the agent choose cmd in state?
+        statecmd2obs = defaultdict(lambda: list())
+        
+        # print('iterating self.commands')
+        for (state, obs), cmd in C.items():
+            statecmd2obs[(state,cmd)].append(obs)
+            # print('%s, %s -> %s' % (state, obs, cmd))
+
+        # A compact representation of the policy
+        # as a map from (state, set of observations) to commands.
+
+        # policy: (state, obsset) -> cmd
+        policy = {}
+        # print('iterating statecmd2obs')
+        for (state, cmd), obsset in statecmd2obs.items():
+            # print(' %s, %s => %s' % (state, cmd, obsset))
+            obsset = tuple(sorted(map(obs_namer, obsset)))
+            obsset_name = obsset_namer(obsset)
+            
+            state_name = state_namer(state)
+            cmd_name = cmd_namer(cmd)
+
+            # print('  or %s, %s => %s' % (state_name, cmd_name, obsset_name))
+            # print('  |because %s = %s' % (obsset_name, obsset))
+            key = (state_name, obsset_name)
+            # print('key', key)
+            assert not key in policy
+            policy[key] = cmd_name
+
+        # print 'all commands', set(policy.values()), set(C.values())
+
+        assert len(set(policy.values())) == len(set(C.values()))
+
+        print policy
+
+        for n, obsset in obsset_namer.get_name2ob().items():
+            print('%4s is %3d obs: %s' % (n, len(obsset), obsset))
+
+        for n, cmd in cmd_namer.get_name2ob().items():
+            print('%4s is %s' % (n, cmd))
+
         return dict(G=G, 
                     name2state=state_namer.get_name2ob(),
                     name2obs = obs_namer.get_name2ob(),
-                    name2obsset=obsset_namer.get_name2ob(),)
+                    name2cmd=cmd_namer.get_name2ob(),
+                    name2obsset=obsset_namer.get_name2ob(),
+                    policy=policy)
 
 
     def get_state(self):
@@ -230,20 +284,69 @@ class Agent():
         key = (self.state, obs)
 
         if not key in self.transitions:
-            print('Cannot find key %s\n%s' % key)
+            msg = ('Cannot find context state %s, obs %s' % key)
 
             for (s, o) in self.transitions:
                 if s == self.state:
-                    print('Found same state but obs %r' % (str(o)))
+                    msg += ('\nFound same state but obs %r' % (str(o)))
 
             for (s, o) in self.transitions:
                 if o == obs:
-                    print('Found  obs but state %s' % (str(s)))
-
-            raise ValueError()
+                    msg += ('\nFound obs but state %s' % (str(s)))
+            print msg
+            raise ValueError(msg)
 
         self.command = self.commands[key]
         self.state = self.transitions[key]
 
     def get_commands(self):
-        return self.command
+        cmd = self.command
+        # FIXME, in this case cmd = ('u', 's22=1'). We should have picked earlier.
+        if isinstance(cmd, tuple):
+            cmd = cmd[0]
+        return cmd
+
+def get_policy_graph(policy):
+    graph = pydot.Dot('ordered', graph_type='digraph', compound='true',
+                      fontname='Times', fontsize=20)
+    gcontexts = pydot.Cluster('context', rank='same', label='Contexts')
+    gcommands = pydot.Cluster('commands', rank='same', label='Commands')
+    graph.add_subgraph(gcommands)
+    graph.add_subgraph(gcontexts)
+
+    for cmd in set(policy.values()):
+        gcommands.add_node(pydot.Node(cmd))
+
+
+    stategroup = {}
+    for (state, obsset), cmd in policy.items():
+        if not state in stategroup:
+            stategroup[state] = pydot.Cluster('state%s' % str(state), label=state)
+            gcontexts.add_subgraph(stategroup[state])
+
+    for (state, obsset), cmd in policy.items():
+        n = '%s, %s' % (state, obsset)
+        parent = gcontexts
+        parent = stategroup[state]
+        parent.add_node(pydot.Node(n, label=obsset))
+
+#         graph.add_edge(pydot.Edge(n, cmd,
+#                                       ltail=gcontexts.get_name(),
+#                                       lhead=gcommands.get_name()))
+
+        graph.add_edge(pydot.Edge(n, cmd))
+
+    return graph
+
+
+class Namer():
+    def __init__(self, pattern):
+        self.pattern = pattern
+        self.ob2name = {}
+    def __call__(self, ob):
+        if not ob in  self.ob2name:
+            self.ob2name[ob] = self.pattern % len(self.ob2name)
+        return self.ob2name[ob]
+
+    def get_name2ob(self):
+        return dict((name, ob) for ob, name in self.ob2name.items())

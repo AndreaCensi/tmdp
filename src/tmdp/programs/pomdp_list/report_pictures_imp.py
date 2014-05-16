@@ -113,29 +113,29 @@ def video_trajectory(beliefs, agent_states, pomdp, out,
     plotfunc = plotter.plotfunc
     pg_quick_animation(plotfunc, nframes, out=out, **video_params)
 
+#
+# def report_pictures(res, pomdp):
+#     trajectories = res['trajectories']
+#
+#     r = Report()
+#
+#     print(' I obtained %d trajectories' % len(trajectories))
+#
+#     for i, tr in enumerate(trajectories):
+#         with r.subsection('tr%d' % i) as sub:
+#             report_pictures_trajectory(sub, res, pomdp, tr)
+#
+#     return r
 
-def report_pictures(res, pomdp):
-    trajectories = res['trajectories']
-
-    r = Report()
-
-    print(' I obtained %d trajectories' % len(trajectories))
-
-    for i, tr in enumerate(trajectories):
-        with r.subsection('tr%d' % i) as sub:
-            report_pictures_trajectory(sub, res, pomdp, tr)
-
-    return r
-
-
-def report_pictures_trajectory(r, res, pomdp, tr):  # @UnusedVariable
-
-    f = r.figure()
-
-    beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
-
-    for i, belief in enumerate(beliefs):
-        with f.plot('t%s' % i) as pylab:
-            pomdp.display_state_dist(pylab, belief)
-            turn_all_axes_off(pylab)
+#
+# def report_pictures_trajectory(r, res, pomdp, tr):  # @UnusedVariable
+#
+#     f = r.figure()
+#
+#     beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
+#
+#     for i, belief in enumerate(beliefs):
+#         with f.plot('t%s' % i) as pylab:
+#             pomdp.display_state_dist(pylab, belief)
+#             turn_all_axes_off(pylab)
 
