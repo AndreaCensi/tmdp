@@ -87,6 +87,8 @@ def disambiguate(decisions):
             trigger = h1[:len(h0) + 1]
         else:
             trigger = h1[:prefix_len + 1]
+            # trying new one
+#             trigger = h1[:prefix_len + 2]
 
         k = len(extra_states)
         # state_name = 's' + ['A', 'B', 'C', 'D', 'E', 'F', 'G'][k]

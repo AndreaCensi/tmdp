@@ -47,7 +47,8 @@ def add_final(trajectories):
     return tjs
 
 def alternate_observersations_an(res, pomdp, pomdp2):
-    trajectories = add_final(res['trajectories'])
+    # trajectories = add_final(res['trajectories'])
+    trajectories = res['trajectories']
     print('We have %d trajectories' % len(trajectories))
     for i, t in enumerate(trajectories):
         print(i, t[-1])

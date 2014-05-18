@@ -1,17 +1,19 @@
 from contracts import contract
 
+from grid_intruder.intruder_pomdp import IntruderPOMDP
+from grid_intruder.intruder_pomdp_rf import IntruderPOMDPrf
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
 from tmdp import get_conftools_tmdp_smdps
 from tmdp.programs.main import TMDP
 from tmdp.programs.show import instance_mdp
 
+from .alternate_observations import alternate_observersations_an
 from .meat import pomdp_list_states, find_minimal_policy
+from .report_agent_imp import report_agent
 from .report_aliasing_imp import report_aliasing
 from .report_pictures_imp import jobs_videos
-from tmdp.programs.pomdp_list.report_agent_imp import report_agent
-from tmdp.programs.pomdp_list.alternate_observations import alternate_observersations_an
-from grid_intruder.intruder_pomdp import IntruderPOMDP
-from grid_intruder.intruder_pomdp_rf import IntruderPOMDPrf
+from .report_trajectories_imp import report_trajectories
+from grid_intruder.intruder_pomdp_dec import IntruderPOMDPDec
 
 
 __all__ = ['POMDPList']
@@ -42,6 +44,10 @@ class POMDPList(TMDP.get_sub(), QuickApp):
             """ Returns res['builder'] as a MDPBuilder """
             res = cc.comp(find_minimal_policy, res, pomdp)
 
+
+            cc.add_report(cc.comp(report_trajectories, res),
+                          'report_trajectories')
+
             cc.add_report(cc.comp(report_agent, res, pomdp),
                           'report_agent')
 
@@ -60,17 +66,21 @@ class POMDPList(TMDP.get_sub(), QuickApp):
 
             # See if we can do the same policy with different
             # observation model
-            horizons = [0, 1, 2, 3, 4]
-            for ch, horizon in iterate_context_names(cc, horizons, key='horizon'):
-                pomdp2 = ch.comp(get_alternative_pomdp, pomdp, horizon)
-                res2 = ch.comp(alternate_observersations_an, res, pomdp, pomdp2)
-                ch.add_report(ch.comp(report_agent, res2, pomdp, job_id='report_agent_z'),
-                              'report_agent_z')
-                ch.comp_dynamic(jobs_videos, res2, pomdp2)
+            horizons = False
+            if horizons:
+                horizons = [0, 1, 2, 3, 4]
+                for ch, horizon in iterate_context_names(cc, horizons, key='horizon'):
+                    pomdp2 = ch.comp(get_alternative_pomdp, pomdp, horizon)
+                    res2 = ch.comp(alternate_observersations_an, res, pomdp, pomdp2)
+                    ch.add_report(ch.comp(report_agent, res2, pomdp, job_id='report_agent_z'),
+                                  'report_agent_z')
+                    ch.comp_dynamic(jobs_videos, res2, pomdp2)
+                    ch.add_report(ch.comp(report_trajectories, res),
+                                  'report_trajectories')
 
 
 def get_alternative_pomdp(pomdp, horizon):
-    if not isinstance(pomdp, IntruderPOMDP):
+    if not isinstance(pomdp, (IntruderPOMDP, IntruderPOMDPDec)):
         raise ValueError('Works only for IntruderPOMDP.')
 
     new_pomdp = IntruderPOMDPrf(pomdp.get_gridmap(), horizon=horizon)

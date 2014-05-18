@@ -216,7 +216,7 @@ class Agent():
         obs_namer = Namer('y%d')
         obsset_namer = Namer('Y%d')
         cmd_namer = Namer('u%d')
-        
+#         cmd_namer = lambda x: x
         # each state is a node
         for state in self.get_all_states():
             s = state_namer(state)
@@ -280,7 +280,9 @@ class Agent():
             key = (state_name, obsset_name)
             # print('key', key)
             assert not key in policy
+            warnings.warn('writing out commands instead of naming them')
             policy[key] = cmd_name
+            policy[key] = cmd
 
         # print 'all commands', set(policy.values()), set(C.values())
 

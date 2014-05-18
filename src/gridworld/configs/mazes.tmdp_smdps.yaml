@@ -78,3 +78,10 @@
   code:
   - grid_intruder.IntruderPOMDP
   - gridmap: "map_intruder_${num}"
+
+
+- id: "intruderdec_${num}"
+  desc: ""
+  code:
+  - grid_intruder.IntruderPOMDPDec
+  - gridmap: "map_intruder_${num}"

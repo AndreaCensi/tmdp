@@ -9,7 +9,7 @@ from reprep import Report
 from reprep.plot_utils import turn_all_axes_off
 
 
-def jobs_videos(context, res, pomdp):
+def jobs_videos(context, res, pomdp, maxvideos=6):
     """ Creates dynamic jobs for each trajectory. """
     trajectories = res['trajectories']
 
@@ -19,19 +19,22 @@ def jobs_videos(context, res, pomdp):
         beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
         agent_states = [tr[0]['agent_state']] + [t['agent_state'] for t in tr]
 
+        # number of steps
         ns = len(beliefs)
-        # only creates one video per length of trajectory.
-        if len2num[ns] > 0:
-            continue
+        if len(trajectories) > maxvideos:
 
-        len2num[ns] += 1
+            # only creates one video per length of trajectory.
+            if len2num[ns] > 0:
+                continue
+
+            len2num[ns] += 1
 
         trjname = 'tr%03dsteps%03d' % (ns, i)
 
         out = os.path.join(context.get_output_dir(), trjname + '.mp4')
         context.comp(video_trajectory, beliefs=beliefs,
                      agent_states=agent_states, pomdp=pomdp, out=out,
-                     job_id='video%03d' % i)
+                     job_id=trjname)
 
         c2 = context.child(trjname)
         c2.add_extra_report_keys(trajectory=trjname)

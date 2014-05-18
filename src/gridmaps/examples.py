@@ -80,6 +80,43 @@ def map_intruder_4():
     return GridMap(blocks=blocks)
 
 
+def map_intruder_4c():
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, I, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
+def map_intruder_4d():
+    """ Vede uno prima dell'altro """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, E, E, I, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, I, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, E, E, E, E, W, W, W, W, W, E, W],
+        [W, E, W, W, W, W, W, W, W, W, W, W, E, W],
+        [W, E, E, E, S, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W]
+    ]
+    return GridMap(blocks=blocks)
+
 def map_intruder_4a():
     blocks = [
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],

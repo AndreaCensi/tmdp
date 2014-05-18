@@ -16,11 +16,11 @@ from tmdp.mdp import SimplePOMDP
 
 
 __all__ = [
-     'IntruderPOMDP',
+     'IntruderPOMDPDec',
 ]
 
 
-class IntruderPOMDP(SimplePOMDP):
+class IntruderPOMDPDec(SimplePOMDP):
     # Observation meaning that no intruder was detected
     undetected = 'U'
 
@@ -57,6 +57,8 @@ class IntruderPOMDP(SimplePOMDP):
 
                 wrong = True
 
+#         self.found = 'found'
+#         self.found_obs = 'found-obs'
         if wrong:
             raise ValueError()
 
@@ -65,9 +67,11 @@ class IntruderPOMDP(SimplePOMDP):
 
     def is_state(self, state):
         """ States are two tuples of two-coordinates (agent and intruder). """
+#         if state == self.found:
+#             return True
         assert isinstance(state, tuple)
         assert len(state) == 2
-        assert isinstance(state[0], tuple)
+        assert isinstance(state[0], tuple), state
         assert isinstance(state[1], tuple)
         assert len(state[0]) == 2
         assert len(state[1]) == 2
@@ -80,76 +84,111 @@ class IntruderPOMDP(SimplePOMDP):
 
     @memoize_instance
     def actions(self, state):
-        robot, intruder = state  # @UnusedVariable
         actions = []
-        for action, motion in GridWorldsConstants.action_to_displ.items():
+        self.declare_actions = {}
+        for intruder in self.gridmap.get_intruder_cells():
+            dec = 'D-%s-%s' % intruder
+            self.declare_actions[dec] = intruder
+            actions.append(dec)
 
+#         if self.found == state:
+#             return list(self.declare_actions)
+
+        robot, intruder = state  # @UnusedVariable
+
+        for action, motion in GridWorldsConstants.action_to_displ.items():
             length = np.hypot(motion[0], motion[1])
             if length <= 1:
                 actions.append(action)
 #             s2 = self._grid.next_cell(robot, motion)
 #             if self._grid.is_empty(s2):
 #                 actions.append(action)
+
         return actions
-
-    @memoize_instance
-    def transition(self, state, action):
-        robot, intruder = state  # @UnusedVariable
-        assert action in self.actions(state), \
-            '%s not in %s' % (action, self.actions(state))
-
-        motion = GridWorldsConstants.action_to_displ[action]
-        s2 = self._grid.next_cell(robot, motion)
-        if self._grid.is_empty(s2):
-            return {(s2, intruder): 1}
-        else:
-            return {(robot, intruder): 1}
-
-    @memoize_instance
-    def reward(self, state, action, state2):  # @UnusedVariable
-        (di, dj) = GridWorldsConstants.action_to_displ[action]
-        length = np.hypot(di, dj)
-        return -length
-        # TODO: add penalty for bumping?
-
-    @memoize_instance
-    def get_start_dist(self):
-        raise NotImplemented()
-#         start_cells = self.gridmap.get_start_cells()
-#         intruder_cells = self.gridmap.get_intruder_cells()
-#
-#         states = list(itertools.product(start_cells, intruder_cells))
-#         d = {}
-#         for s in states:
-#             d[s] = 1.0 / len(states)
-#         return d
 
 
     @memoize_instance
     def is_goal_belief(self, belief):
         # We are done when we found it
-        return len(belief) == 1
+        return len(belief) == 1  # and list(belief)[0] == self.found
+
+    @memoize_instance
+    def transition(self, state, action):
+#         if state == self.found:
+#             return state
+        robot, intruder = state  # @UnusedVariable
+        assert action in self.actions(state), \
+            '%s not in %s' % (action, self.actions(state))
+
+        if action in self.declare_actions:
+            return {state: 1}
+#             declared = self.declare_actions[action]
+#             robot, intruder = state  # @UnusedVariable
+#             if intruder == declared:
+#                 return {self.found: 1}
+#             else:
+#                 return {state: 1}
+        else:
+            motion = GridWorldsConstants.action_to_displ[action]
+            s2 = self._grid.next_cell(robot, motion)
+            if self._grid.is_empty(s2):
+                return {(s2, intruder): 1}
+            else:
+                return {(robot, intruder): 1}
+
+    @memoize_instance
+    def reward(self, state, action, state2):  # @UnusedVariable
+#         if self.state == self.found:
+#             return 0
+        if action in self.declare_actions:
+            declared = self.declare_actions[action]
+            robot, intruder = state2  # @UnusedVariable
+            if intruder == declared:
+                return 0
+            else:
+                return -100
+        else:
+            (di, dj) = GridWorldsConstants.action_to_displ[action]
+            length = np.hypot(di, dj)
+            return -length
+            # TODO: add penalty for bumping?
+
+    @memoize_instance
+    def get_start_dist(self):
+        raise NotImplemented
+        start_cells = self.gridmap.get_start_cells()
+        intruder_cells = self.gridmap.get_intruder_cells()
+
+        states = list(itertools.product(start_cells, intruder_cells))
+        d = {}
+        for s in states:
+            d[s] = 1.0 / len(states)
+        return d
+
 
     @memoize_instance
     def get_observations(self):
         """ Observations of this POMDP are """
         empty_cells = list(self.gridmap.get_empty_cells())
-        sensor = ([IntruderPOMDP.undetected]
+        sensor = ([IntruderPOMDPDec.undetected]
                   + self.gridmap.get_intruder_cells())
         return list(itertools.product(empty_cells, sensor))
 
     @memoize_instance
     def get_observations_dist(self, state):
+#         if state == self.found:
+#             return {self.found_obs: 1}
+
         robot, intruder = state  # @UnusedVariable
         # this is where the intruder can be
         # possibilities = self.gridmap.get_intruder_cells()
-        #robot_can_see = which_can_see(self.grid_map, robot, possibilities)
-        
-        # Actually we have a deterministic 
+        # robot_can_see = which_can_see(self.grid_map, robot, possibilities)
+
+        # Actually we have a deterministic
         if self._can_see(robot, intruder):
             return {(robot, intruder): 1}
         else:
-            return {(robot, IntruderPOMDP.undetected): 1}
+            return {(robot, IntruderPOMDPDec.undetected): 1}
 
     @memoize_instance
     def _can_see(self, robot, intruder):
@@ -157,7 +196,6 @@ class IntruderPOMDP(SimplePOMDP):
         obstacles = self.gridmap.get_wall_cells()
         occluded = set(trace) & set(obstacles)
         return not bool(occluded)
-
 
     def display_state_dist(self, pylab, state_dist):
         from gridworld.grid2 import GridWorld2

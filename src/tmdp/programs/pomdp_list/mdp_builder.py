@@ -52,7 +52,7 @@ class MDPBuilder():
         state2actions = defaultdict(lambda: set())
         state2action2transition = defaultdict(lambda: defaultdict(lambda:{}))
         state2action2state2reward = \
-            defaultdict(lambda: defaultdict(lambda: defaultdict(lambda:{})))
+            defaultdict(lambda: defaultdict(lambda: defaultdict(lambda:{})))  # xXx: should be 0
 
         # create states self.states = set()
         states = set()
@@ -67,11 +67,17 @@ class MDPBuilder():
             state2action2state2reward[s1][action][s2] = reward  # += p
 
         if goal_absorbing:
-            for g in self.goals:
-                for a in actions:
-                    state2actions[g].add(a)
-                    state2action2transition[g][a][g] = 1.0
-                    state2action2state2reward[g][a][g] = 0.0
+            if False:
+                for g in self.goals:
+                    for a in actions:
+                        state2actions[g].add(a)
+
+    #                     print('%10s %s' % (reward, (s1, action, s2)))
+
+                        state2action2transition[g][a][g] = 1.0
+    #                     print ('setting %s to 0 instead of %s' %
+    #                            ((g, a, g), state2action2state2reward[g][a][g]))
+                        state2action2state2reward[g][a][g] = 0.0
         else:
             # for each goal state, we reset to the start distribution
             assert isinstance(stay, float)

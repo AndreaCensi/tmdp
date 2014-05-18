@@ -5,12 +5,23 @@ from tmdp.meat.value_it.vit_solver import VITMDPSolver
 from .disambiguate_imp import disambiguate
 from .mdp_builder import MDPBuilder
 from tmdp.programs.pomdp_list.agent import create_agent, check_agent
+import warnings
 
 
 __all__ = [
    'find_minimal_policy',
    'pomdp_list_states',
 ]
+#
+# def show_goal_situation(pomdp):
+#     for g, goal in enumerate(pomdp.get_goals()):
+#         print('goal %d: %s' % (g, goal))
+#         for a in pomdp.actions(goal):
+#             print(' if I choose %s' % a)
+#             for s, p_s in pomdp.transition(goal, a).items():
+#                 reward = pomdp.reward(goal, a, s)
+#                 print('   p_s %10s reward %s -> %s ' % (p_s, reward, s))
+#         print()
 
 
 def find_minimal_policy(res, pomdp):
@@ -29,15 +40,23 @@ def find_minimal_policy(res, pomdp):
         res['trajectories'] 
      """
 
+    print('Start distribution: %s' % pomdp.get_start_dist_dist())
     builder = res['builder']
     print('Creating mdp_absoribing...')
     mdp_absorbing = builder.get_sampled_mdp(goal_absorbing=True)
 
+
+    
+    
+#     show_goal_situation(mdp_absorbing)
+    
     print('Solving the resulting MDP...')
     solver = VITMDPSolver(least_committed=False)
     res2 = solver.solve(mdp_absorbing)
     policy = res2['policy']
-
+    print('commands used by policy: %s' % list(policy.values()))
+#     print('policy: %s' % policy)
+ 
     res2['mdp_absorbing'] = mdp_absorbing
     res2['mdp_absorbing:desc'] = """
         
@@ -65,14 +84,18 @@ def find_minimal_policy(res, pomdp):
     res2['nonneg:desc'] = """
         Belief states with nonnegligible probability.
     """
-
-    res2['policy'] = policy
     res2['policy:desc'] = """
         Optimal policy: hash belief state -> distribution over actions
     """
 
     print('Find all trajectories for the POMDP...')
-    res2['trajectories'] = get_all_trajectories(pomdp, policy)
+    tjs = get_all_trajectories(pomdp, policy)
+    print('we got %d trajectories.' % len(tjs))
+    for i, t in enumerate(tjs):
+        print(' %d - final %s' % (i, t[-1]))
+    # add command "end" in the final step
+#     from tmdp.programs.pomdp_list.alternate_observations import add_final
+    res2['trajectories'] = tjs
     res2['trajectories:desc'] = """
         These are all possible trajectories in this POMDP. 
         A trajectory is a sequence of dictionaries with fields
@@ -115,7 +138,8 @@ def find_minimal_policy(res, pomdp):
     check_agent(res2['agent'], res2['trajectories'])
 
 
-
+    print('actions: %s' % list(all_actions(pomdp)))
+    print('declare: %s' % pomdp.declare_actions)
     print('...done.')
     return res2
 
@@ -140,7 +164,7 @@ def pomdp_list_states(pomdp, use_fraction=True):
 
     actions = all_actions(pomdp)
     while nodes_open:
-        if len(nodes_closed) % 100 == 0:
+        if len(nodes_closed) % 100 == 0 or True:
             print('nopen: %5d nclosed: %5d ngoal: %5d'
                   % (len(nodes_open), len(nodes_closed), len(nodes_goal)))
         belief = nodes_open.pop()
@@ -152,11 +176,16 @@ def pomdp_list_states(pomdp, use_fraction=True):
 
         nodes_closed.add(belief)
 
+        warnings.warn('xxx')
         if pomdp.is_goal_belief(belief):
             nodes_goal.add(belief)
             builder.mark_goal(belief)
 
-        else:
+#         if pomdp.is_goal_belief(belief):
+#             nodes_goal.add(belief)
+#             builder.mark_goal(belief)
+#         else:
+        if True:
             # for each action, evolve belief
             for action in actions:
                 belief1 = pomdp.evolve(belief, action,
@@ -180,7 +209,11 @@ def pomdp_list_states(pomdp, use_fraction=True):
                                               observations=y,
                                               use_fraction=use_fraction)
 
-                    builder.add_transition(belief, action, belief2, p_y, -1)
+
+                    warnings.warn('assuming state2=state')
+                    reward = avgreward(pomdp, belief, action)
+
+                    builder.add_transition(belief, action, belief2, p_y, reward)
 
                     if belief2 in nodes_closed or belief2 in nodes_open:
                         pass
@@ -189,7 +222,13 @@ def pomdp_list_states(pomdp, use_fraction=True):
 
     return res
 
-
+def avgreward(pomdp, belief, action):
+    reward = 0
+    for state, p_state in belief.items():
+        warnings.warn('assuming state2=state')
+        state2 = state
+        reward += p_state * pomdp.reward(state, action, state2)
+    return reward
 
 
 def get_all_trajectories(pomdp, policy):
@@ -209,7 +248,21 @@ def get_all_trajectories(pomdp, policy):
 # @contract(returns='list(list(tuple(*,*)))')
 def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
     if pomdp.is_goal_belief(belief):
-        return [[]]
+        # return [[]]
+        actions = list(policy[belief].keys())
+        if len(actions) != 1:
+            msg = 'Expected that a goal belief only had 1 action.'
+            raise ValueError(msg)
+        final_action = actions[0]
+        belief1 = belief2 = belief
+        ydist = pomdp.get_observations_dist_given_belief(belief1,
+                    use_fraction=use_fraction)
+        # Just choose first
+        final_y = list(ydist)[0]
+        traj = [[dict(action=final_action, obs=final_y,
+                             belief=belief, belief1=belief1,
+                             ydist=ydist, belief2=belief2)]]
+        return traj
 
     belief = frozendict2(belief)
     actions = policy[belief].keys()
@@ -230,6 +283,13 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
             belief2 = pomdp.inference(belief=belief1,
                                       observations=y,
                                       use_fraction=use_fraction)
+
+            if belief2 == belief:
+                print('Found fixed point under optimal policy.')
+                print(' - belief: %s' % belief)
+                print(' - policy: %s' % policy[belief])
+                print(' - belief2: %s' % belief)
+                raise ValueError()
             rest = get_all_trajectories_rec(pomdp, policy, belief2,
                                             use_fraction=use_fraction)
             for t1 in rest:
@@ -240,17 +300,25 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
 
     return trajectories
 
-def get_decisions(trajectories):
+def get_decisions(trajectories, skip_last=True):
     """ Returns list of dicts with fields action, state=dict(last=y) 
         and history """
     n = 0
     for tr in trajectories:
+#         if skip_last:
+#             r = range(len(tr) - 1)
+#         else:
+#             r = range(len(tr))
+#         for i in r:
         for i in range(len(tr)):
             action = tr[i]['action']
             obs = tr[i]['obs']
             history = tuple([yh['obs'] for yh in tr[:i]])
             n += 1
             # print('%03d: u = %s  y = %s  history %s' % (n, action, obs, len(history)))
-            yield frozendict2(action=action,
-                              state=frozendict2(last=obs), history=history)
+            d = dict(action=action,
+                    state=frozendict2(last=obs), history=history)
+            if 'agent_state' in tr[i]:
+                d['agent_state'] = tr[i]['agent_state']
+            yield frozendict2(d)
     # print('Found %d raw decisions' % (n))

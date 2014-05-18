@@ -63,6 +63,7 @@ class SampledMDP(SimpleMDP):
 
     def is_goal(self, s):
         return s in self._goals
+
     def get_goals(self):  # XXX added quickly
         return self._goals
 
