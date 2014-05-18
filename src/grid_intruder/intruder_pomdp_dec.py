@@ -41,26 +41,28 @@ class IntruderPOMDPDec(SimplePOMDP):
         if len(starts) == 0:
             raise ValueError('Not enough start cells')
 
-        wrong = False
-        for start, intruder in itertools.product(starts, intruders):
-            if self._can_see(start, intruder):
-                print('Start point %s can see intruder cell %s'
-                      % (start, intruder))
+        check_can_see_from_start = False
+        if check_can_see_from_start:
+            wrong = False
+            for start, intruder in itertools.product(starts, intruders):
+                if self._can_see(start, intruder):
+                    print('Start point %s can see intruder cell %s'
+                          % (start, intruder))
 
-                obs = self.gridmap.get_obstacle_grid()
-                for x in _trace_path(start, intruder):
-                    obs[x] = '2'
-                    print(x)
-                obs[start] = '3'
-                obs[intruder] = '3'
-                print(obs)
+                    obs = self.gridmap.get_obstacle_grid()
+                    for x in _trace_path(start, intruder):
+                        obs[x] = '2'
+                        print(x)
+                    obs[start] = '3'
+                    obs[intruder] = '3'
+                    print(obs)
 
-                wrong = True
+                    wrong = True
 
-#         self.found = 'found'
-#         self.found_obs = 'found-obs'
-        if wrong:
-            raise ValueError()
+    #         self.found = 'found'
+    #         self.found_obs = 'found-obs'
+            if wrong:
+                raise ValueError('Agent can see intruder from start.')
 
     def get_gridmap(self):
         return self.gridmap

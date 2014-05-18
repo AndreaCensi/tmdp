@@ -361,3 +361,62 @@ def map_rmaze():
     ]
     return GridMap(blocks=blocks)
 
+
+
+# Need to have more than one intruder cell
+# def map_test00():
+#     blocks = [
+#         [W, W, W, W, W],
+#         [W, E, E, I, W],
+#         [W, E, W, E, W],
+#         [W, S, W, E, W],
+#         [W, W, W, W, W],
+#     ]
+#     return GridMap(blocks=blocks)
+
+def map_test01():
+    """ 0 bits """
+    blocks = [
+        [W, W, W, W, W],
+        [W, E, E, I, W],
+        [W, E, W, E, W],
+        [W, S, W, I, W],
+        [W, W, W, W, W],
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_test02():
+    """ 0 bits """
+    blocks = [
+        [W, W, W, W, W],
+        [W, I, E, E, W],
+        [W, E, W, E, W],
+        [W, S, W, I, W],
+        [W, W, W, W, W],
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_test03():
+    """ 1 bits, 2 states, 4 trajectories """
+    blocks = [
+        [W, W, W, W, W, W, W],
+        [W, E, E, S, E, E, W],
+        [W, I, W, W, W, I, W],
+        [W, I, W, W, W, I, W],
+        [W, W, W, W, W, W, W],
+    ]
+    return GridMap(blocks=blocks)
+
+
+def map_test04():
+    """ 0 bits, 1 state, 3 trajectories """
+    blocks = [
+        [W, W, W, W, W, W, W],
+        [W, E, E, S, E, E, W],
+        [W, I, W, W, W, E, W],
+        [W, I, W, W, W, I, W],
+        [W, W, W, W, W, W, W],
+    ]
+    return GridMap(blocks=blocks)

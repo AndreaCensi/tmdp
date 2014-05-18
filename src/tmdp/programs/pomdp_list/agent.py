@@ -173,7 +173,7 @@ class Agent():
         name2cmd = Gd['name2cmd']
         policy = Gd['policy']
 
-        f = r.figure()
+#         f = r.figure()
         import networkx as nx
 #         # pos = nx.spectral_layout(G)
 #         with f.plot('G', figsize=(5, 5)) as pylab:  # @UnusedVariable

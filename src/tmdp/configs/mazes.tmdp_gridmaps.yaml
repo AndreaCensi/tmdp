@@ -87,3 +87,12 @@
   - "gridmaps.map_intruder_${num}"
   - {}
   
+
+
+
+- id: "map_test${num}"
+  desc: ""
+  code:
+  - "gridmaps.map_test${num}"
+  - {}
+  

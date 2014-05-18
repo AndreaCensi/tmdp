@@ -245,8 +245,78 @@ def get_all_trajectories(pomdp, policy):
     return trajectories
 
 
-# @contract(returns='list(list(tuple(*,*)))')
 def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
+    """ This one first generates an observation. 
+    
+        for obs in observations:
+            for action in actions:
+            
+    """
+    if pomdp.is_goal_belief(belief):
+        return [[]]
+#         actions = list(policy[belief].keys())
+#         if len(actions) != 1:
+#             msg = 'Expected that a goal belief only had 1 action.'
+#             raise ValueError(msg)
+#         final_action = actions[0]
+#         belief1 = belief2 = belief
+#         ydist = pomdp.get_observations_dist_given_belief(belief1,
+#                     use_fraction=use_fraction)
+#         # Just choose first
+#         final_y = list(ydist)[0]
+#         traj = [[dict(action=final_action, obs=final_y,
+#                              belief=belief, belief1=belief1,
+#                              ydist=ydist, belief2=belief2)]]
+#         return traj
+
+    belief = frozendict2(belief)
+    obs_dist = pomdp.get_observations_dist_given_belief(belief,
+                    use_fraction=use_fraction)
+    
+    trajectories = []
+
+    for obs, _ in obs_dist.items():
+        belief_given_obs = pomdp.inference(belief=belief,
+                                           observations=obs,
+                                           use_fraction=use_fraction)
+        assert belief_given_obs in policy
+        actions = policy[belief_given_obs].keys()
+        for action in actions:
+            belief_after_action = pomdp.evolve(belief_given_obs,
+                                               action, use_fraction=use_fraction)
+            if belief_after_action == belief:
+                print('Found fixed point under optimal policy.')
+                print(' - belief: %s' % belief)
+                print(' - policy: %s' % policy[belief])
+                print(' - belief2: %s' % belief)
+                raise ValueError()
+
+            rest = get_all_trajectories_rec(pomdp, policy, belief_after_action,
+                                            use_fraction=use_fraction)
+            for t1 in rest:
+                desc = """
+                    From belief
+                    we sampled obs
+                    then belief1 = belief given obs
+                    then we chose action
+                    then belief2 = belief1 evolved with action.
+                """
+                warnings.warn('Need to chenage belief1,2 to meaningful names.')
+                traj = [dict(belief=belief, action=action, obs=obs,
+                             belief1=belief_given_obs,
+                             ydist=obs_dist, belief2=belief_after_action, desc=desc)] + t1
+                trajectories.append(traj)
+
+    return trajectories
+
+# @contract(returns='list(list(tuple(*,*)))')
+def get_all_trajectories_rec_old(pomdp, policy, belief, use_fraction=True):
+    """ This one first asks for an action, then looks for observations. 
+    
+    
+        for action in actions:
+            for obs in observations:
+    """
     if pomdp.is_goal_belief(belief):
         # return [[]]
         actions = list(policy[belief].keys())

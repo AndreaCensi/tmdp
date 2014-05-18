@@ -85,3 +85,11 @@
   code:
   - grid_intruder.IntruderPOMDPDec
   - gridmap: "map_intruder_${num}"
+
+
+
+- id: "idec-${map}"
+  desc: "Intruder dec with map ${map}"
+  code:
+  - grid_intruder.IntruderPOMDPDec
+  - gridmap: "map_${map}"
