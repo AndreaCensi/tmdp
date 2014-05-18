@@ -1,5 +1,6 @@
 from contracts import contract
 
+from grid_intruder import IntruderPOMDPDec
 from grid_intruder.intruder_pomdp import IntruderPOMDP
 from grid_intruder.intruder_pomdp_rf import IntruderPOMDPrf
 from quickapp import CompmakeContext, QuickApp, iterate_context_names
@@ -13,7 +14,6 @@ from .report_agent_imp import report_agent
 from .report_aliasing_imp import report_aliasing
 from .report_pictures_imp import jobs_videos
 from .report_trajectories_imp import report_trajectories
-from grid_intruder.intruder_pomdp_dec import IntruderPOMDPDec
 
 
 __all__ = ['POMDPList']
@@ -26,6 +26,7 @@ class POMDPList(TMDP.get_sub(), QuickApp):
 
     def define_options(self, params):
         params.add_string_list('mdps', help='POMDPS')
+        params.add_flag('horizons', help='Do alternative sensing analysis.')
 
     @contract(context=CompmakeContext)
     def define_jobs_context(self, context):
@@ -46,7 +47,7 @@ class POMDPList(TMDP.get_sub(), QuickApp):
 
 
             cc.add_report(cc.comp(report_trajectories, res),
-                          'report_trajectories')
+                          'report_trajectories', sensing='original')
 
             cc.add_report(cc.comp(report_agent, res, pomdp),
                           'report_agent')
@@ -61,21 +62,22 @@ class POMDPList(TMDP.get_sub(), QuickApp):
             # Too long (too many iterations)
             # cc.add_report(cc.comp(report_pictures, res, pomdp),
             # 'report_pictures')
-
-            cc.comp_dynamic(jobs_videos, res, pomdp)
+            prefix = '%s-or' % (id_mdp)
+            cc.comp_dynamic(jobs_videos, res, pomdp, prefix=prefix)
 
             # See if we can do the same policy with different
             # observation model
-            horizons = False
-            if horizons:
+
+            if options.horizons:
                 horizons = [0, 1, 2, 3, 4]
-                for ch, horizon in iterate_context_names(cc, horizons, key='horizon'):
+                for ch, horizon in iterate_context_names(cc, horizons, key='sensing'):
                     pomdp2 = ch.comp(get_alternative_pomdp, pomdp, horizon)
                     res2 = ch.comp(alternate_observersations_an, res, pomdp, pomdp2)
                     ch.add_report(ch.comp(report_agent, res2, pomdp, job_id='report_agent_z'),
                                   'report_agent_z')
-                    ch.comp_dynamic(jobs_videos, res2, pomdp2)
-                    ch.add_report(ch.comp(report_trajectories, res),
+                    prefix = '%s-h%d' % (id_mdp, horizon)
+                    ch.comp_dynamic(jobs_videos, res2, pomdp2, prefix=prefix)
+                    ch.add_report(ch.comp(report_trajectories, res2, name_obs=True),
                                   'report_trajectories')
 
 

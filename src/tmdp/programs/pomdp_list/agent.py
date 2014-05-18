@@ -36,8 +36,9 @@ def check_agent_trajectory(agent, tr):
         observations = s['obs']
         expected = s['action']
 
-        agent.process_observations(observations)
-        obtained = agent.get_commands()
+        s['agent_state'] = agent.get_state()
+
+        obtained = agent.get_commands(obs=observations)
 
         if obtained != expected:
             print('--- failure at step %d / %d' % (i + 1, len(tr)))
@@ -45,7 +46,10 @@ def check_agent_trajectory(agent, tr):
             print('obtained %r' % str(obtained))
             raise ValueError()
 
-        s['agent_state'] = agent.get_state()
+        agent.update_state(observations)
+        s['agent_state_next'] = agent.get_state()
+
+
 
 
 def interpret_actions(state, action):
@@ -310,8 +314,7 @@ class Agent():
     def reset(self):
         self.state = self.state0
         
-
-    def process_observations(self, obs):
+    def update_state(self, obs):
         key = (self.state, obs)
 
         if not key in self.transitions:
@@ -327,15 +330,19 @@ class Agent():
             print msg
             raise ValueError(msg)
 
-        self.command = self.commands[key]
+#         self.command = self.commands[key]
         self.state = self.transitions[key]
 
-    def get_commands(self):
-        cmd = self.command
-        # FIXME, in this case cmd = ('u', 's22=1'). We should have picked earlier.
-        if isinstance(cmd, tuple):
-            cmd = cmd[0]
-        return cmd
+    def get_commands(self, obs):
+        key = (self.state, obs)
+        assert key in self.commands
+        return self.commands[key]
+#
+#         cmd = self.command
+#         # FIXME, in this case cmd = ('u', 's22=1'). We should have picked earlier.
+#         if isinstance(cmd, tuple):
+#             cmd = cmd[0]
+#         return cmd
 
 def get_policy_graph(policy):
     graph = pydot.Dot('ordered', graph_type='digraph', compound='true',

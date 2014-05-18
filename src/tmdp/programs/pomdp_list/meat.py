@@ -294,17 +294,17 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
             rest = get_all_trajectories_rec(pomdp, policy, belief_after_action,
                                             use_fraction=use_fraction)
             for t1 in rest:
-                desc = """
-                    From belief
-                    we sampled obs
-                    then belief1 = belief given obs
-                    then we chose action
-                    then belief2 = belief1 evolved with action.
-                """
+#                 desc = """
+#                     From belief
+#                     we sampled obs
+#                     then belief1 = belief given obs
+#                     then we chose action
+#                     then belief2 = belief1 evolved with action.
+#                 """
                 warnings.warn('Need to chenage belief1,2 to meaningful names.')
                 traj = [dict(belief=belief, action=action, obs=obs,
                              belief1=belief_given_obs,
-                             ydist=obs_dist, belief2=belief_after_action, desc=desc)] + t1
+                             ydist=obs_dist, belief2=belief_after_action)] + t1
                 trajectories.append(traj)
 
     return trajectories

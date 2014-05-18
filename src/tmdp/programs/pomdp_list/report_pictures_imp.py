@@ -9,8 +9,8 @@ from reprep import Report
 from reprep.plot_utils import turn_all_axes_off
 
 
-def jobs_videos(context, res, pomdp, maxvideos=6):
-    """ Creates dynamic jobs for each trajectory. """
+def jobs_videos(context, res, pomdp, prefix, maxvideos=6):
+    """ Creates video jobs for representative sample of trajectories. """
     trajectories = res['trajectories']
 
     len2num = defaultdict(lambda:0)
@@ -30,8 +30,8 @@ def jobs_videos(context, res, pomdp, maxvideos=6):
             len2num[ns] += 1
 
         trjname = 'tr%03dsteps%03d' % (ns, i)
-
-        out = os.path.join(context.get_output_dir(), trjname + '.mp4')
+        filename = '%s-%s.mp4' % (prefix, trjname)
+        out = os.path.join(context.get_output_dir(), filename)
         context.comp(video_trajectory, beliefs=beliefs,
                      agent_states=agent_states, pomdp=pomdp, out=out,
                      job_id=trjname)
