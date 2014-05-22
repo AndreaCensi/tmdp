@@ -12,17 +12,6 @@ __all__ = [
    'find_minimal_policy',
    'pomdp_list_states',
 ]
-#
-# def show_goal_situation(pomdp):
-#     for g, goal in enumerate(pomdp.get_goals()):
-#         print('goal %d: %s' % (g, goal))
-#         for a in pomdp.actions(goal):
-#             print(' if I choose %s' % a)
-#             for s, p_s in pomdp.transition(goal, a).items():
-#                 reward = pomdp.reward(goal, a, s)
-#                 print('   p_s %10s reward %s -> %s ' % (p_s, reward, s))
-#         print()
-
 
 def find_minimal_policy(res, pomdp):
     """ 
@@ -45,10 +34,6 @@ def find_minimal_policy(res, pomdp):
     print('Creating mdp_absoribing...')
     mdp_absorbing = builder.get_sampled_mdp(goal_absorbing=True)
 
-
-    
-    
-#     show_goal_situation(mdp_absorbing)
     
     print('Solving the resulting MDP...')
     solver = VITMDPSolver(least_committed=False)
@@ -57,16 +42,17 @@ def find_minimal_policy(res, pomdp):
     print('commands used by policy: %s' % list(policy.values()))
 #     print('policy: %s' % policy)
  
-    res2['mdp_absorbing'] = mdp_absorbing
-    res2['mdp_absorbing:desc'] = """
-        
-    """
+    # can be big!
+    # res2['mdp_absorbing'] = mdp_absorbing
+#     res2['mdp_absorbing:desc'] = """
+#
+#     """
 
     # Create a nonabsorbing MDP by resetting after getting to the goal.
     print('Creating MDP variation with nonabsorbing states...')
     mdp_non_absorbing = \
         builder.get_sampled_mdp(goal_absorbing=False, stay=0.1)
-    res2['mdp_non_absorbing'] = mdp_non_absorbing
+    # res2['mdp_non_absorbing'] = mdp_non_absorbing
 
     # Get the stationary distribution of this MDP
     print('Getting the stationary distribution of this MDP...')
@@ -90,9 +76,9 @@ def find_minimal_policy(res, pomdp):
 
     print('Find all trajectories for the POMDP...')
     tjs = get_all_trajectories(pomdp, policy)
-    print('we got %d trajectories.' % len(tjs))
-    for i, t in enumerate(tjs):
-        print(' %d - final %s' % (i, t[-1]))
+#     print('we got %d trajectories.' % len(tjs))
+#     for i, t in enumerate(tjs):
+#         print(' %d - final %s' % (i, t[-1]))
     # add command "end" in the final step
 #     from tmdp.programs.pomdp_list.alternate_observations import add_final
     res2['trajectories'] = tjs
@@ -164,7 +150,7 @@ def pomdp_list_states(pomdp, use_fraction=True):
 
     actions = all_actions(pomdp)
     while nodes_open:
-        if len(nodes_closed) % 100 == 0 or True:
+        if len(nodes_closed) % 100 == 0:
             print('nopen: %5d nclosed: %5d ngoal: %5d'
                   % (len(nodes_open), len(nodes_closed), len(nodes_goal)))
         belief = nodes_open.pop()
@@ -181,6 +167,9 @@ def pomdp_list_states(pomdp, use_fraction=True):
             nodes_goal.add(belief)
             builder.mark_goal(belief)
 
+#         warnings.warn('Optimization: do not pop goal beliefs')
+#         if pomdp.is_goal_belief(belief):
+#             continue
 #         if pomdp.is_goal_belief(belief):
 #             nodes_goal.add(belief)
 #             builder.mark_goal(belief)
@@ -254,20 +243,6 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
     """
     if pomdp.is_goal_belief(belief):
         return [[]]
-#         actions = list(policy[belief].keys())
-#         if len(actions) != 1:
-#             msg = 'Expected that a goal belief only had 1 action.'
-#             raise ValueError(msg)
-#         final_action = actions[0]
-#         belief1 = belief2 = belief
-#         ydist = pomdp.get_observations_dist_given_belief(belief1,
-#                     use_fraction=use_fraction)
-#         # Just choose first
-#         final_y = list(ydist)[0]
-#         traj = [[dict(action=final_action, obs=final_y,
-#                              belief=belief, belief1=belief1,
-#                              ydist=ydist, belief2=belief2)]]
-#         return traj
 
     belief = frozendict2(belief)
     obs_dist = pomdp.get_observations_dist_given_belief(belief,
@@ -294,13 +269,13 @@ def get_all_trajectories_rec(pomdp, policy, belief, use_fraction=True):
             rest = get_all_trajectories_rec(pomdp, policy, belief_after_action,
                                             use_fraction=use_fraction)
             for t1 in rest:
-#                 desc = """
-#                     From belief
-#                     we sampled obs
-#                     then belief1 = belief given obs
-#                     then we chose action
-#                     then belief2 = belief1 evolved with action.
-#                 """
+                # desc = """
+                #     From belief
+                #     we sampled obs
+                #     then belief1 = belief given obs
+                #     then we chose action
+                #     then belief2 = belief1 evolved with action.
+                # """
                 warnings.warn('Need to chenage belief1,2 to meaningful names.')
                 traj = [dict(belief=belief, action=action, obs=obs,
                              belief1=belief_given_obs,
@@ -370,16 +345,11 @@ def get_all_trajectories_rec_old(pomdp, policy, belief, use_fraction=True):
 
     return trajectories
 
-def get_decisions(trajectories, skip_last=True):
+def get_decisions(trajectories):
     """ Returns list of dicts with fields action, state=dict(last=y) 
         and history """
     n = 0
     for tr in trajectories:
-#         if skip_last:
-#             r = range(len(tr) - 1)
-#         else:
-#             r = range(len(tr))
-#         for i in r:
         for i in range(len(tr)):
             action = tr[i]['action']
             obs = tr[i]['obs']

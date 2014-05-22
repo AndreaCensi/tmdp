@@ -3,6 +3,7 @@ from copy import deepcopy
 import itertools
 import os
 from collections import defaultdict
+import warnings
 
 
 @contract(decisions='set(dict)')
@@ -23,21 +24,22 @@ def disambiguate(decisions):
         """ REturns None or     (state, (d1, d2), (a1, a2)), l """
         res = find_shortest_ambiguous(decisions)
 
-#         d0 = find_shortest_ambiguous(decisions)
         if res is None:
             print('Done! no ambiguous states; added %s bits.' % len(extra_states))
             return extra_states, decisions
 
-        if False:
-            (state, (d0, d1), (a0, a1)), prefix_len = res
+        if True:
+            warnings.warn('cur work (False)')
+            (state, (d0, d1), (a0, a1)), factor = res
 
         else:
+            # This kinda works
             d0 = find_shortest_ambiguous_old(decisions)
             state = d0['state']
             amb = get_ambiguous_states(decisions, d0)
             amb.add(d0)
             assert len(amb) >= 2
-            ((d0, d1), (a0, a1)), prefix_len = choose_decisions_to_disambiguate(amb)
+            ((d0, d1), (a0, a1)), factor = choose_decisions_to_disambiguate(amb)
 
 #         # print('shortest: %s' % d0)
 #         amb = get_ambiguous_states(decisions, d0)
@@ -53,10 +55,10 @@ def disambiguate(decisions):
 #
 #         ((d1_, d2_), (a1_, a2_)), prefix_len = choose_decisions_to_disambiguate(amb)
         print('Chosen ambiguous context %s ' % state)
-        print('The best commands to disambiguate (l=%s) are "%s" and "%s".' %
-               ((prefix_len, a0, a1)))
-        print(' d0 history: %s' % str(d0['history']))
-        print(' d1 history: %s' % str(d1['history']))
+        print('The best commands to disambiguate (factor=%s) are "%s" and "%s".' %
+               ((factor, a0, a1)))
+        print(' d0 history has len %s' % len(d0['history']))
+        print(' d1 history has len %s' % len(d1['history']))
 
 #         if False:
 #             # how we did it before
@@ -75,7 +77,24 @@ def disambiguate(decisions):
         h0 = d0['history']
         h1 = d1['history']
         
+        prefix_len = length_first_divergence(d0, d1)
         assert is_prefix(h0[:prefix_len], h1[:prefix_len])
+        print(' common prefix of the two :  %d' % prefix_len)
+
+        
+        if is_prefix(h0, h1) or is_prefix(h1, h0):
+            print('Special case: one is prefix of the other.')
+
+            # We want h1 to be longer
+
+            if len(h1) < len(h0):
+                h0, h1 = h1, h0
+
+            assert len(h1) > len(h0)
+
+        print('h0: %s' % str(h0))
+        print('h1: %s' % str(h1))
+
         # XXX: this might overflow...
         # assert not is_prefix(h0[:prefix_len + 1], h1[:prefix_len + 1])
         # print ('prefix[:len]= %s' % is_prefix(h0[:prefix_len], h1[:prefix_len]))
@@ -97,9 +116,11 @@ def disambiguate(decisions):
 
         print('adding triggering condition of length %s' % len(trigger))
         print('trigger: %s' % str(trigger))
-
+        print()
         decisions = add_state(decisions, name=state_name, trigger=trigger)
-        
+#
+#         if len(extra_states) > 3:
+#             raise ValueError()
     assert False
 
 
@@ -107,14 +128,17 @@ def choose_decisions_to_disambiguate(amb):
     """ Returns d0, d1 """
     # amb: ambiguous decisions
     assert len(amb) >= 2
+
+    assert len(set(a['state'] for a in amb)) == 1
+
     # These are the commands
     actions = set([x['action'] for x in amb])
     assert len(actions) >= 2
-    print('Ambiguous set: %d; ncommands: %s' % (len(amb), len(actions)))
-
+    # print('Ambiguous set: %d; ncommands: %s' % (len(amb), len(actions)))
     
     def decisions_for(a):
         return [d for d in amb if d['action'] == a]
+
     def goodness(a1, a2):
         assert a1 != a2
         # find decisions for each command
@@ -123,7 +147,15 @@ def choose_decisions_to_disambiguate(amb):
             assert d1['action'] != d2['action']
             assert d1['action'] == a1
             assert d2['action'] == a2
-            dfactor = length_first_divergence(d1, d2)
+            if False:
+                dfactor = length_first_divergence(d1, d2)
+            elif True:
+                dfactor = max([len(d1['history']), len(d2['history']) ])
+            else:
+                # horrible
+                # dfactor = min([len(d1['history']), len(d2['history']) ])
+                False
+
             dchoices.append(((d1, d2), dfactor))
         (d1o, d2o), l = min(dchoices, key=lambda x:x[1])
         return (d1o, d2o), l
@@ -152,11 +184,12 @@ def length_first_divergence(d1, d2):
 def add_state(decisions, name, trigger):
     res = set()
     for d in deepcopy(decisions):
-        history = d['history']
+        history = d['history'] + (d['state']['last'],)
         if is_prefix(trigger, history):
 
             if history == trigger:
                 d['action'] = (d['action'], '%s=%s' % (name, 1))
+                # print('adding trigger for %r' % (d))
 
             # The action acts after one step
             if len(history) > len(trigger):
@@ -213,20 +246,13 @@ def find_shortest_ambiguous(decisions):
     for state, amb_decisions in  state2ambiguousdec.items():
         ((d1_, d2_), (a1_, a2_)), prefix_len = choose_decisions_to_disambiguate(amb_decisions)
         choice = (state, (d1_, d2_), (a1_, a2_))
+
         choices.append((choice, prefix_len))
 
     (state, (d1, d2), (a1, a2)), l = min(choices, key=lambda x:x[1])
     # print('Results for commands')
     # print(choices)
     return (state, (d1, d2), (a1, a2)), l
-#
-#     length = lambda x: length_ambiguation(decisions, x)
-#     ambiguous_sorted = sorted(ambiguous, key=length)
-#
-#     if ambiguous_sorted:
-#         return ambiguous_sorted[0]
-#     else:
-#         return None
 
 
 def find_shortest_ambiguous_old(decisions):

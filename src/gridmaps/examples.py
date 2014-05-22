@@ -174,6 +174,22 @@ def map_intruder_5():
     return GridMap(blocks=blocks)
 
 
+def map_intruder_4s():
+    """ shorter """
+    blocks = [
+        [W, W, W, W, W, W, W],
+        [W, E, W, S, W, I, W],
+        [W, E, W, E, W, I, W],
+        [W, E, W, E, W, E, W],
+        [W, E, E, E, W, E, W],
+        [W, E, W, E, W, E, W],
+        [W, I, W, E, E, E, W],
+        [W, I, W, E, W, E, W],
+        [W, W, W, W, W, W, W],
+    ]
+    return GridMap(blocks=blocks)
+
+
 def map_intruder_6():
     """ This has 3 distinct rooms. """
     blocks = [
@@ -189,6 +205,27 @@ def map_intruder_6():
         [W, E, E, E, E, E, E, W, S, E, E, W, E, W],
         [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
         [W, E, W, I, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, W, W, W, W, W, W, E, W, W, E, W],
+        [W, E, E, E, E, E, E, E, E, E, E, E, E, W],
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+    ]
+    return GridMap(blocks=blocks)
+
+def map_intruder_6b():
+    """ This has 3 distinct rooms. """
+    blocks = [
+        [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+        [W, E, W, I, E, E, E, W, I, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, E, E, W],
+        [W, E, E, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, E, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, I, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, W, W, W, W, W, E, E, E, W, E, W],
+        [W, E, W, W, I, E, E, W, E, E, I, W, E, W],
+        [W, E, W, W, E, E, E, W, W, W, W, W, E, W],
+        [W, E, E, E, E, E, E, W, S, E, E, W, E, W],
+        [W, E, W, W, E, E, E, W, E, E, E, W, E, W],
+        [W, E, W, W, I, E, E, W, E, E, E, W, E, W],
         [W, E, W, W, W, W, W, W, W, E, W, W, E, W],
         [W, E, E, E, E, E, E, E, E, E, E, E, E, W],
         [W, W, W, W, W, W, W, W, W, W, W, W, W, W],
@@ -403,6 +440,7 @@ def map_test03():
     blocks = [
         [W, W, W, W, W, W, W],
         [W, E, E, S, E, E, W],
+        [W, E, W, W, W, E, W],
         [W, I, W, W, W, I, W],
         [W, I, W, W, W, I, W],
         [W, W, W, W, W, W, W],
@@ -415,6 +453,7 @@ def map_test04():
     blocks = [
         [W, W, W, W, W, W, W],
         [W, E, E, S, E, E, W],
+        [W, E, W, W, W, E, W],
         [W, I, W, W, W, E, W],
         [W, I, W, W, W, I, W],
         [W, W, W, W, W, W, W],

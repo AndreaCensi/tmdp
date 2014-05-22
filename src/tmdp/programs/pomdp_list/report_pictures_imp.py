@@ -4,17 +4,26 @@ import os
 from matplotlib.font_manager import FontProperties
 
 import numpy as np
-from procgraph_mplayer.quick_animation import pg_quick_animation
+from procgraph_mplayer import pg_quick_animation
 from reprep import Report
 from reprep.plot_utils import turn_all_axes_off
 
 
-def jobs_videos(context, res, pomdp, prefix, maxvideos=6):
-    """ Creates video jobs for representative sample of trajectories. """
+def jobs_videos(context, res, pomdp, outdir, prefix, maxvideos=6):
+    """ 
+        Creates video jobs for representative sample of trajectories. 
+    
+        Returns
+            d = res['videos'][i]
+            
+            d['filename'], d['traj']
+              
+    """
     trajectories = res['trajectories']
 
     len2num = defaultdict(lambda:0)
-
+    
+    res = {'videos': []}
     for i, tr in enumerate(trajectories):
         beliefs = [tr[0]['belief']] + [t['belief2'] for t in tr]
         agent_states = [tr[0]['agent_state']] + [t['agent_state'] for t in tr]
@@ -31,16 +40,19 @@ def jobs_videos(context, res, pomdp, prefix, maxvideos=6):
 
         trjname = 'tr%03dsteps%03d' % (ns, i)
         filename = '%s-%s.mp4' % (prefix, trjname)
-        out = os.path.join(context.get_output_dir(), filename)
-        context.comp(video_trajectory, beliefs=beliefs,
+        out = os.path.join(outdir, filename)
+        filename = context.comp(video_trajectory, beliefs=beliefs,
                      agent_states=agent_states, pomdp=pomdp, out=out,
-                     job_id=trjname)
+                     job_id='video-%s' % trjname)
+
+        res['videos'].append(dict(filename=filename, traj=i))
 
         c2 = context.child(trjname)
         c2.add_extra_report_keys(trajectory=trjname)
         r = c2.comp(report_trajectory, beliefs, agent_states, pomdp)
         c2.add_report(r, 'trajectory')
-
+    
+    return res
 
 def report_trajectory(beliefs, agent_states, pomdp):
     r = Report()
@@ -86,17 +98,24 @@ class TrajPlotter():
         values = [agent_state[k] for k in keys]
         state_string = ' '.join(map(str, values))
 
-        if False:
-            pylab.figtext(0.1, 0.95 , state_string,
-                      fontproperties=FontProperties(size=25))
-        else:
-            shape = self.pomdp.get_grid_shape()
-            dx = 0
-            dy = shape[1] + 0.5
-            pylab.text(dx, dy , state_string,
-                       fontproperties=FontProperties(size=25))
+        #   pylab.figtext(0.1, 0.95 , state_string,
+        #     fontproperties=FontProperties(size=25))
 
-            pylab.axis(self.get_data_bounds())
+
+        max_len = 16
+        size0 = 24 * 2
+        if len(state_string) > max_len:
+            use_len = size0 * max_len * 1.0 / len(state_string)
+        else:
+            use_len = size0
+
+        shape = self.pomdp.get_grid_shape()
+        dx = 0
+        dy = shape[1] + 0.5
+        pylab.text(dx, dy , state_string,
+                   fontproperties=FontProperties(size=use_len))
+
+        pylab.axis(self.get_data_bounds())
 
         pylab.tight_layout()
 
@@ -115,7 +134,7 @@ def video_trajectory(beliefs, agent_states, pomdp, out,
                           upsample=upsample)
     plotfunc = plotter.plotfunc
     pg_quick_animation(plotfunc, nframes, out=out, **video_params)
-
+    return out
 #
 # def report_pictures(res, pomdp):
 #     trajectories = res['trajectories']

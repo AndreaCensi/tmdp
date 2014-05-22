@@ -1,10 +1,12 @@
-from reprep.utils.frozen import frozendict2
-from reprep import Report
-from contracts import contract
-import numpy as np
-from reprep.constants import MIME_PNG, MIME_PDF
-import pydot
 import warnings
+
+from contracts import contract
+import pydot
+
+import numpy as np
+from reprep import Report
+from reprep.constants import MIME_PNG, MIME_PDF
+from reprep.utils import frozendict2
 
 
 def create_agent(decisions_dis):
@@ -129,7 +131,8 @@ class Agent():
 #                 next_state = state
 
             if state!=next_state:
-                print('Transition %s, %s -> %s' % (state , obs, next_state))
+                # print('Transition %s, %s -> %s' % (state , obs, next_state))
+                pass
 
             self.transitions[(state, obs)] = next_state
             self.commands[(state, obs)] = real_action
@@ -158,13 +161,13 @@ class Agent():
         eff = ((100.0 * len(states) / np.power(2, nbits)))
         r.text('efficiency', '%.2f%% ' % eff)
 
-        if nbits > 0:
-            data = []
-            for state in states:
-                row = [state[s] for s in self.states_names]
-                data.append(row)
-
-            r.table('states', data, cols=list(self.states_names))
+#         if nbits > 0:
+#             data = []
+#             for state in states:
+#                 row = [state[s] for s in self.states_names]
+#                 data.append(row)
+#
+#             r.table('states', data, cols=list(self.states_names))
 
 
     @contract(r=Report)
