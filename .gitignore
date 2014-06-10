@@ -4,3 +4,5 @@ out-vit-solve
 src/tmdp.egg-info/
 out-*
 out
+test_pyhull.html
+test_pyhull.html_resources

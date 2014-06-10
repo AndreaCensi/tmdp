@@ -101,9 +101,8 @@ class TrajPlotter():
         #   pylab.figtext(0.1, 0.95 , state_string,
         #     fontproperties=FontProperties(size=25))
 
-
         max_len = 16
-        size0 = 24 * 2
+        size0 = 24 * 1.5
         if len(state_string) > max_len:
             use_len = size0 * max_len * 1.0 / len(state_string)
         else:

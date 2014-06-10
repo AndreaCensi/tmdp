@@ -13,6 +13,7 @@ from .report_agent_imp import report_agent
 from .report_pictures_imp import jobs_videos
 from .report_summary_imp import report_summary
 from .report_trajectories_imp import report_trajectories
+import os
 
 
 __all__ = ['POMDPList']
@@ -36,10 +37,10 @@ class POMDPList(TMDP.get_sub(), QuickApp):
         config_mdps = get_conftools_tmdp_smdps()
         id_mdps = config_mdps.expand_names(options.mdps)
 
-        # put all videos in the same place
-        outdir = context.get_output_dir()
-
         for cc, id_mdp in iterate_context_names(context, id_mdps):
+            # put all videos in the same place
+            outdir = os.path.join(context.get_output_dir(), id_mdp)
+
             cc.add_extra_report_keys(id_mdp=id_mdp)
             pomdp = cc.comp_config(instance_mdp, id_mdp)
 
@@ -47,10 +48,10 @@ class POMDPList(TMDP.get_sub(), QuickApp):
             """ Returns res['builder'] as a MDPBuilder """
             res = cc.comp(find_minimal_policy, res, pomdp)
 
-
             cc.add_report(cc.comp(report_trajectories, res, name_obs=False),
                           'report_trajectories', sensing='original',
                           named=False)
+
             cc.add_report(cc.comp(report_trajectories, res, name_obs=True),
                           'report_trajectories', sensing='original',
                           named=True)

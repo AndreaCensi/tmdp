@@ -1,7 +1,6 @@
 from tmdp.programs.pomdp_list.agent import check_agent, create_agent, Namer
 from tmdp.programs.pomdp_list.disambiguate_imp import disambiguate
 from tmdp.programs.pomdp_list.meat import get_decisions
-import warnings
 
 
 def create_alternate_trajectories(trajectories, pomdp, pomdp2, rename_obs=True):

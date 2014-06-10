@@ -54,6 +54,9 @@ def Q(mdp, V, s, a, gamma=1):
 
 
 def vit_solve(mdp, gamma=1, threshold=1e-7):
+    states = list(mdp.states())
+    print('Value iteration MDP solver (n=%s, gamma=%s)' % (len(states), gamma))
+
     V = {}
     for s in mdp.states():
         V[s] = 0
@@ -72,6 +75,7 @@ def vit_solve(mdp, gamma=1, threshold=1e-7):
         if change < threshold:
             break
 
+    print('Value iteration concluded.')
     return V
 
 def value_diff(V1, V2):
